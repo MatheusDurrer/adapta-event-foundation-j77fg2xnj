@@ -1,18 +1,11 @@
 import { useEffect, useState } from 'react'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import {
-  Mail,
-  AlertTriangle,
-  XCircle,
-  CheckCircle2,
-  TrendingUp,
-  TrendingDown,
-  Loader2,
-} from 'lucide-react'
+import { Mail, AlertTriangle, XCircle, CheckCircle2, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell } from 'recharts'
+import { MetricCard } from '@/components/dashboard/MetricCard'
 
 const CURRENT_EVENT_ID = 'event-123'
 
@@ -115,13 +108,13 @@ export default function Dashboard() {
           delay={100}
         />
         <MetricCard
-          title="Emails Não Recebidos"
+          title="Emails Nao Recebidos"
           value={isLoading ? '-' : metrics.emailsNaoRecebidos.toString()}
           trend="+2%"
           trendUp={false}
           icon={XCircle}
-          iconColor="text-orange-600 dark:text-orange-400"
-          iconBg="bg-orange-100 dark:bg-orange-900/30"
+          iconColor="text-red-600 dark:text-red-400"
+          iconBg="bg-red-100 dark:bg-red-900/30"
           delay={200}
         />
         <MetricCard
@@ -142,8 +135,8 @@ export default function Dashboard() {
           style={{ animationDelay: '400ms' }}
         >
           <CardHeader>
-            <CardTitle className="text-xl">Mapa de Horário de Check-in</CardTitle>
-            <CardDescription>Visualização de chegadas por horário</CardDescription>
+            <CardTitle className="text-xl">Mapa de Horario de Check-in</CardTitle>
+            <CardDescription>Visualizacao de chegadas por horario</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -197,30 +190,5 @@ export default function Dashboard() {
         </Card>
       </div>
     </div>
-  )
-}
-
-function MetricCard({ title, value, trend, trendUp, icon: Icon, iconColor, iconBg, delay }: any) {
-  return (
-    <Card
-      className="animate-slide-up shadow-sm border-border/50 hover:border-primary/20 transition-colors"
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <div className={`h-8 w-8 rounded-full ${iconBg} flex items-center justify-center`}>
-          <Icon className={`h-4 w-4 ${iconColor}`} />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="text-3xl font-bold tracking-tight">{value}</div>
-        <p
-          className={`text-xs ${trendUp ? 'text-green-500' : 'text-red-500'} font-medium mt-2 flex items-center gap-1`}
-        >
-          {trendUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-          {trend} este mês
-        </p>
-      </CardContent>
-    </Card>
   )
 }
