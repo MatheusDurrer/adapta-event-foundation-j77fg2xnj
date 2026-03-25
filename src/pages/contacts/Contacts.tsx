@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { PageHeader } from '@/components/shared/PageHeader'
-import { Users, Plus, ShieldAlert, Edit2, Trash2 } from 'lucide-react'
+import { Users, Plus, Edit2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { AddContactDialog } from '@/components/contacts/AddContactDialog'
 import { EditContactDialog } from '@/components/contacts/EditContactDialog'
 import { Contact } from '@/types/contact'
@@ -32,9 +31,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { cn } from '@/lib/utils'
-
-type Role = 'admin' | 'operacao' | 'gestor'
 
 const MOCK_CONTACTS: Contact[] = Array.from({ length: 45 }).map((_, i) => ({
   id: `mock-${i}`,
@@ -59,10 +55,8 @@ export default function Contacts() {
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
-  const [userRole, setUserRole] = useState<Role>('admin')
 
   const totalPages = Math.max(1, Math.ceil(allContacts.length / pageSize))
-  const canManageContacts = userRole === 'admin' || userRole === 'operacao'
 
   useEffect(() => {
     if (page > totalPages) setPage(totalPages)
@@ -93,44 +87,12 @@ export default function Contacts() {
 
   return (
     <div className="animate-fade-in pb-10">
-      <div className="flex justify-end mb-4 gap-2 border-b pb-4">
-        <span className="text-sm text-muted-foreground self-center mr-2">Simular Perfil:</span>
-        {(['admin', 'operacao', 'gestor'] as Role[]).map((r) => (
-          <Button
-            key={r}
-            variant={userRole === r ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setUserRole(r)}
-          >
-            {r.charAt(0).toUpperCase() + r.slice(1)}
-          </Button>
-        ))}
-      </div>
-
       <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-8 gap-4">
         <PageHeader title="Contatos" />
         <div className="flex items-center">
-          {canManageContacts ? (
-            <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2 shadow-sm">
-              <Plus className="h-4 w-4" /> Adicionar Contato
-            </Button>
-          ) : (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="inline-block cursor-not-allowed">
-                  <Button disabled className="gap-2 pointer-events-none">
-                    <Plus className="h-4 w-4" /> Adicionar Contato
-                  </Button>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="flex items-center gap-2">
-                  <ShieldAlert className="h-4 w-4 text-amber-500" /> Apenas Admin e Operação podem
-                  adicionar
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          )}
+          <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2 shadow-sm">
+            <Plus className="h-4 w-4" /> Adicionar Contato
+          </Button>
         </div>
       </div>
 
@@ -143,11 +105,9 @@ export default function Contacts() {
           <p className="text-muted-foreground mb-6 max-w-sm text-center">
             Os contatos aparecerão aqui assim que as inscrições começarem.
           </p>
-          {canManageContacts && (
-            <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2 shadow-sm">
-              <Plus className="h-4 w-4" /> Adicionar Contato
-            </Button>
-          )}
+          <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2 shadow-sm">
+            <Plus className="h-4 w-4" /> Adicionar Contato
+          </Button>
         </div>
       ) : (
         <div className="space-y-4">
@@ -234,18 +194,10 @@ export default function Contacts() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              disabled={!canManageContacts}
-                              className={cn(
-                                'h-8 w-8 text-muted-foreground',
-                                canManageContacts
-                                  ? 'hover:text-primary'
-                                  : 'opacity-50 cursor-not-allowed',
-                              )}
+                              className="h-8 w-8 text-muted-foreground hover:text-primary"
                               onClick={() => {
-                                if (canManageContacts) {
-                                  setSelectedContact(c)
-                                  setIsEditDialogOpen(true)
-                                }
+                                setSelectedContact(c)
+                                setIsEditDialogOpen(true)
                               }}
                             >
                               <Edit2 className="h-4 w-4" />
@@ -253,14 +205,8 @@ export default function Contacts() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              disabled={!canManageContacts}
-                              className={cn(
-                                'h-8 w-8 text-muted-foreground',
-                                canManageContacts
-                                  ? 'hover:text-destructive'
-                                  : 'opacity-50 cursor-not-allowed',
-                              )}
-                              onClick={() => canManageContacts && handleDelete(c.id)}
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                              onClick={() => handleDelete(c.id)}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -343,23 +289,19 @@ export default function Contacts() {
         </div>
       )}
 
-      {canManageContacts && (
-        <>
-          <AddContactDialog
-            open={isAddDialogOpen}
-            onOpenChange={setIsAddDialogOpen}
-            eventId="evt-123"
-            onSuccess={handleAddSuccess}
-          />
-          {selectedContact && (
-            <EditContactDialog
-              open={isEditDialogOpen}
-              onOpenChange={setIsEditDialogOpen}
-              contact={selectedContact}
-              onSuccess={handleEditSuccess}
-            />
-          )}
-        </>
+      <AddContactDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        eventId="evt-123"
+        onSuccess={handleAddSuccess}
+      />
+      {selectedContact && (
+        <EditContactDialog
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          contact={selectedContact}
+          onSuccess={handleEditSuccess}
+        />
       )}
     </div>
   )
