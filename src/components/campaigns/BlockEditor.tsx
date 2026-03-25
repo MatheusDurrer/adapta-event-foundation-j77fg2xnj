@@ -128,7 +128,7 @@ export function BlockEditor({
             />
           </div>
         )
-      case 'social':
+      case 'social': {
         const platforms = ['LinkedIn', 'YouTube', 'X', 'Instagram', 'Facebook', 'Pinterest']
         return (
           <div className="space-y-2">
@@ -154,6 +154,7 @@ export function BlockEditor({
             </div>
           </div>
         )
+      }
       case 'qrcode':
         return (
           <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
