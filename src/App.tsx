@@ -16,6 +16,7 @@ import NotFound from '@/pages/NotFound'
 const Dashboard = lazy(() => import('@/pages/dashboard/Dashboard'))
 const Contacts = lazy(() => import('@/pages/contacts/Contacts'))
 const Campaigns = lazy(() => import('@/pages/campaigns/Campaigns'))
+const CampaignEditor = lazy(() => import('@/pages/campaigns/CampaignEditor'))
 const Checkin = lazy(() => import('@/pages/checkin/Checkin'))
 const Suppliers = lazy(() => import('@/pages/suppliers/Suppliers'))
 const Settings = lazy(() => import('@/pages/settings/Settings'))
@@ -47,6 +48,8 @@ const App = () => (
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/contacts" element={<Contacts />} />
                   <Route path="/campaigns" element={<Campaigns />} />
+                  <Route path="/campaigns/new" element={<CampaignEditor />} />
+                  <Route path="/campaigns/:id" element={<CampaignEditor />} />
                   <Route path="/checkin" element={<Checkin />} />
                   <Route path="/suppliers" element={<Suppliers />} />
                   <Route path="/settings" element={<Settings />} />
