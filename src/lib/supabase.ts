@@ -48,6 +48,37 @@ class MockSupabaseClient {
           },
         }
       },
+      update: (payload: any) => {
+        const queryBuilder = {
+          eq: () => queryBuilder,
+          select: () => {
+            return {
+              single: async () => {
+                await new Promise((r) => setTimeout(r, 1200)) // simulate network delay
+
+                if (
+                  payload?.email === 'error@example.com' ||
+                  payload?.email === 'erro@adapta.com'
+                ) {
+                  return { data: null, error: { code: '23505', message: 'Unique violation' } }
+                }
+                if (payload?.email === 'network@example.com') {
+                  return { data: null, error: { message: 'Network Error' } }
+                }
+
+                return {
+                  data: {
+                    ...payload,
+                    updated_at: new Date().toISOString(),
+                  },
+                  error: null,
+                }
+              },
+            }
+          },
+        }
+        return queryBuilder
+      },
       select: () => {
         return {
           eq: () => ({

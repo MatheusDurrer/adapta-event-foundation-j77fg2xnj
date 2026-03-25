@@ -4,6 +4,7 @@ import { Users, Plus, ShieldAlert, Edit2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { AddContactDialog } from '@/components/contacts/AddContactDialog'
+import { EditContactDialog } from '@/components/contacts/EditContactDialog'
 import { Contact } from '@/types/contact'
 import {
   Table,
@@ -31,6 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils'
 
 type Role = 'admin' | 'operacao' | 'gestor'
 
@@ -49,7 +51,9 @@ const MOCK_CONTACTS: Contact[] = Array.from({ length: 45 }).map((_, i) => ({
 }))
 
 export default function Contacts() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
   const [allContacts, setAllContacts] = useState<Contact[]>(MOCK_CONTACTS)
   const [displayedContacts, setDisplayedContacts] = useState<Contact[]>([])
   const [loading, setLoading] = useState(true)
@@ -58,7 +62,7 @@ export default function Contacts() {
   const [userRole, setUserRole] = useState<Role>('admin')
 
   const totalPages = Math.max(1, Math.ceil(allContacts.length / pageSize))
-  const canAddContact = userRole === 'admin' || userRole === 'operacao'
+  const canManageContacts = userRole === 'admin' || userRole === 'operacao'
 
   useEffect(() => {
     if (page > totalPages) setPage(totalPages)
@@ -74,9 +78,13 @@ export default function Contacts() {
     return () => clearTimeout(timer)
   }, [page, pageSize, allContacts])
 
-  const handleSuccess = (newContact: Contact) => {
+  const handleAddSuccess = (newContact: Contact) => {
     setAllContacts((prev) => [newContact, ...prev])
     setPage(1)
+  }
+
+  const handleEditSuccess = (updatedContact: Contact) => {
+    setAllContacts((prev) => prev.map((c) => (c.id === updatedContact.id ? updatedContact : c)))
   }
 
   const handleDelete = (id: string) => {
@@ -102,8 +110,8 @@ export default function Contacts() {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-8 gap-4">
         <PageHeader title="Contatos" />
         <div className="flex items-center">
-          {canAddContact ? (
-            <Button onClick={() => setIsDialogOpen(true)} className="gap-2 shadow-sm">
+          {canManageContacts ? (
+            <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2 shadow-sm">
               <Plus className="h-4 w-4" /> Adicionar Contato
             </Button>
           ) : (
@@ -135,8 +143,8 @@ export default function Contacts() {
           <p className="text-muted-foreground mb-6 max-w-sm text-center">
             Os contatos aparecerão aqui assim que as inscrições começarem.
           </p>
-          {canAddContact && (
-            <Button onClick={() => setIsDialogOpen(true)} className="gap-2 shadow-sm">
+          {canManageContacts && (
+            <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2 shadow-sm">
               <Plus className="h-4 w-4" /> Adicionar Contato
             </Button>
           )}
@@ -226,15 +234,33 @@ export default function Contacts() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-muted-foreground hover:text-primary"
+                              disabled={!canManageContacts}
+                              className={cn(
+                                'h-8 w-8 text-muted-foreground',
+                                canManageContacts
+                                  ? 'hover:text-primary'
+                                  : 'opacity-50 cursor-not-allowed',
+                              )}
+                              onClick={() => {
+                                if (canManageContacts) {
+                                  setSelectedContact(c)
+                                  setIsEditDialogOpen(true)
+                                }
+                              }}
                             >
                               <Edit2 className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                              onClick={() => handleDelete(c.id)}
+                              disabled={!canManageContacts}
+                              className={cn(
+                                'h-8 w-8 text-muted-foreground',
+                                canManageContacts
+                                  ? 'hover:text-destructive'
+                                  : 'opacity-50 cursor-not-allowed',
+                              )}
+                              onClick={() => canManageContacts && handleDelete(c.id)}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -317,13 +343,23 @@ export default function Contacts() {
         </div>
       )}
 
-      {canAddContact && (
-        <AddContactDialog
-          open={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          eventId="evt-123"
-          onSuccess={handleSuccess}
-        />
+      {canManageContacts && (
+        <>
+          <AddContactDialog
+            open={isAddDialogOpen}
+            onOpenChange={setIsAddDialogOpen}
+            eventId="evt-123"
+            onSuccess={handleAddSuccess}
+          />
+          {selectedContact && (
+            <EditContactDialog
+              open={isEditDialogOpen}
+              onOpenChange={setIsEditDialogOpen}
+              contact={selectedContact}
+              onSuccess={handleEditSuccess}
+            />
+          )}
+        </>
       )}
     </div>
   )
