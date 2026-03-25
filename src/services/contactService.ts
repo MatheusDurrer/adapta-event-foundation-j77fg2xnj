@@ -77,7 +77,7 @@ export async function editContactInSupabase(
   }
 }
 
-export async function batchAddContactsToSupabase(
+export async function importContactsToSupabase(
   contacts: Omit<Contact, 'id' | 'createdAt' | 'updatedAt'>[],
 ): Promise<Contact[]> {
   const dbPayload = contacts.map((c) => ({
@@ -88,7 +88,7 @@ export async function batchAddContactsToSupabase(
     phone: c.phone,
     company: c.company,
     event_id: c.eventId,
-    status: c.status || 'active',
+    status: 'active',
   }))
 
   const { data, error } = await supabase.from('contacts').insert(dbPayload).select()

@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { useImportContacts } from '@/hooks/useImportContacts'
-import { UploadCloud, Loader2, ArrowLeft } from 'lucide-react'
+import { UploadCloud, Loader2, ArrowLeft, AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
@@ -55,7 +55,7 @@ export function ImportContactsDialog({
     file,
     loading,
     error,
-    contacts,
+    preview,
     handleFileUpload,
     toggleSelection,
     toggleAll,
@@ -83,7 +83,7 @@ export function ImportContactsDialog({
       <DialogContent
         className={cn(
           'transition-all duration-300',
-          step === 2 ? 'sm:max-w-[800px]' : 'sm:max-w-[450px]',
+          step === 2 ? 'sm:max-w-[850px]' : 'sm:max-w-[450px]',
         )}
       >
         <DialogHeader>
@@ -129,7 +129,7 @@ export function ImportContactsDialog({
                 <UploadCloud className="h-10 w-10 text-muted-foreground mb-4" />
               )}
               <p className="text-sm font-medium mb-4">
-                {file ? file.name : 'Arraste um arquivo CSV ou XLSX aqui ou clique para selecionar'}
+                Arraste um arquivo CSV ou XLSX aqui ou clique para selecionar
               </p>
 
               <Button
@@ -147,11 +147,25 @@ export function ImportContactsDialog({
 
               <p className="text-xs text-muted-foreground mt-4">Tamanho máximo: 10MB</p>
             </div>
+
             {error && (
-              <div className="text-sm font-medium text-destructive mt-2 bg-destructive/10 p-3 rounded-md border border-destructive/20">
+              <div className="text-sm font-medium text-destructive flex items-center gap-2 mt-2 bg-destructive/10 p-3 rounded-md border border-destructive/20">
+                <AlertCircle className="h-4 w-4 shrink-0" />
                 {error}
               </div>
             )}
+
+            {file && !error && !loading && preview.length > 0 && (
+              <div className="text-sm font-medium text-green-600 bg-green-50 p-3 rounded-md border border-green-200">
+                Arquivo processado com sucesso: {file.name} ({preview.length} registros)
+              </div>
+            )}
+
+            <DialogFooter className="mt-4">
+              <Button onClick={() => setStep(2)} disabled={loading || preview.length === 0}>
+                Próximo
+              </Button>
+            </DialogFooter>
           </div>
         )}
 
@@ -159,12 +173,13 @@ export function ImportContactsDialog({
           <div className="space-y-4 py-2">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">
-                {contacts.filter((c) => c._selected).length} contatos para importar
+                {preview.filter((c) => c._selected).length} contatos para importar
               </span>
             </div>
 
             {error && (
-              <div className="text-sm font-medium text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
+              <div className="text-sm font-medium text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0" />
                 {error}
               </div>
             )}
@@ -177,13 +192,14 @@ export function ImportContactsDialog({
                       <TableHead className="w-[50px] pl-4">
                         <Checkbox
                           checked={
-                            contacts.filter((c) => c._isValid).length > 0 &&
-                            contacts.filter((c) => c._isValid).every((c) => c._selected)
+                            preview.filter((c) => c._isValid).length > 0 &&
+                            preview.filter((c) => c._isValid).every((c) => c._selected)
                           }
                           onCheckedChange={(checked) => toggleAll(!!checked)}
                         />
                       </TableHead>
                       <TableHead>Nome</TableHead>
+                      <TableHead>Sobrenome</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>CPF</TableHead>
                       <TableHead>Telefone</TableHead>
@@ -191,11 +207,13 @@ export function ImportContactsDialog({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {contacts.map((c) => (
+                    {preview.map((c) => (
                       <React.Fragment key={c.id}>
                         <TableRow
                           className={cn(
-                            !c._isValid && 'border-b-0 bg-destructive/5 hover:bg-destructive/10',
+                            !c._isValid &&
+                              'border-t-2 border-l-2 border-r-2 border-destructive bg-destructive/5 hover:bg-destructive/10',
+                            c._isValid && 'border-b',
                           )}
                         >
                           <TableCell className="pl-4">
@@ -205,18 +223,17 @@ export function ImportContactsDialog({
                               onCheckedChange={() => toggleSelection(c.id)}
                             />
                           </TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            {c.firstName} {c.lastName}
-                          </TableCell>
+                          <TableCell className="whitespace-nowrap">{c.firstName}</TableCell>
+                          <TableCell className="whitespace-nowrap">{c.lastName}</TableCell>
                           <TableCell>{c.email}</TableCell>
                           <TableCell className="whitespace-nowrap">{c.cpf}</TableCell>
                           <TableCell className="whitespace-nowrap">{c.phone}</TableCell>
                           <TableCell>{c.company}</TableCell>
                         </TableRow>
                         {!c._isValid && (
-                          <TableRow className="bg-destructive/5 hover:bg-destructive/5 border-t-0 border-b border-destructive/20">
+                          <TableRow className="bg-destructive/5 hover:bg-destructive/5 border-b-2 border-l-2 border-r-2 border-destructive">
                             <TableCell
-                              colSpan={6}
+                              colSpan={7}
                               className="py-2 px-4 text-xs text-destructive font-medium"
                             >
                               Erros: {c._errors?.join(', ')}
@@ -225,9 +242,9 @@ export function ImportContactsDialog({
                         )}
                       </React.Fragment>
                     ))}
-                    {contacts.length === 0 && (
+                    {preview.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
+                        <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
                           Nenhum contato encontrado.
                         </TableCell>
                       </TableRow>
@@ -261,7 +278,7 @@ export function ImportContactsDialog({
             </Button>
             <Button
               onClick={importData}
-              disabled={loading || contacts.filter((c) => c._selected).length === 0}
+              disabled={loading || preview.filter((c) => c._selected).length === 0}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {loading ? 'Importando...' : 'Importar'}

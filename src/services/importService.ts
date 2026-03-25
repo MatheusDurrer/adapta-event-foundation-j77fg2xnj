@@ -26,7 +26,11 @@ export type ParsedContact = z.infer<typeof importContactSchema> & {
   _selected: boolean
 }
 
-export async function parseFile(file: File): Promise<ParsedContact[]> {
+export function validateContactRow(raw: any) {
+  return importContactSchema.safeParse(raw)
+}
+
+export async function parseSpreadsheet(file: File): Promise<ParsedContact[]> {
   return new Promise((resolve, reject) => {
     // Simulating PapaParse for CSV and xlsx library for XLSX within the current template setup
     const reader = new FileReader()
@@ -65,7 +69,7 @@ export async function parseFile(file: File): Promise<ParsedContact[]> {
             company: idxEmpresa >= 0 ? cols[idxEmpresa] || '' : '',
           }
 
-          const validation = importContactSchema.safeParse(raw)
+          const validation = validateContactRow(raw)
 
           let errors: string[] = []
           if (!validation.success) {

@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { parseFile, ParsedContact } from '@/services/importService'
-import { batchAddContactsToSupabase } from '@/services/contactService'
+import { parseSpreadsheet, ParsedContact } from '@/services/importService'
+import { importContactsToSupabase } from '@/services/contactService'
 import { Contact } from '@/types/contact'
 
 export function useImportContacts(eventId: string, onSuccess: (inserted: Contact[]) => void) {
@@ -8,9 +8,16 @@ export function useImportContacts(eventId: string, onSuccess: (inserted: Contact
   const [file, setFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [contacts, setContacts] = useState<ParsedContact[]>([])
+  const [preview, setPreview] = useState<ParsedContact[]>([])
+  const [importedCount, setImportedCount] = useState(0)
 
   const handleFileUpload = async (selectedFile: File) => {
+    const fileName = selectedFile.name.toLowerCase()
+    if (!fileName.endsWith('.csv') && !fileName.endsWith('.xlsx')) {
+      setError('Formato inválido. Apenas CSV e XLSX são permitidos.')
+      return
+    }
+
     if (selectedFile.size > 10 * 1024 * 1024) {
       setError('O tamanho máximo do arquivo é 10MB.')
       return
@@ -19,11 +26,11 @@ export function useImportContacts(eventId: string, onSuccess: (inserted: Contact
     setFile(selectedFile)
     setLoading(true)
     setError(null)
+    setPreview([])
 
     try {
-      const parsed = await parseFile(selectedFile)
-      setContacts(parsed)
-      setStep(2)
+      const parsed = await parseSpreadsheet(selectedFile)
+      setPreview(parsed)
     } catch (err: any) {
       setError(err.message || 'Erro ao processar o arquivo.')
     } finally {
@@ -32,22 +39,22 @@ export function useImportContacts(eventId: string, onSuccess: (inserted: Contact
   }
 
   const toggleSelection = (id: string) => {
-    setContacts((prev) => prev.map((c) => (c.id === id ? { ...c, _selected: !c._selected } : c)))
+    setPreview((prev) => prev.map((c) => (c.id === id ? { ...c, _selected: !c._selected } : c)))
   }
 
   const toggleAll = (select: boolean) => {
-    setContacts((prev) => prev.map((c) => (c._isValid ? { ...c, _selected: select } : c)))
+    setPreview((prev) => prev.map((c) => (c._isValid ? { ...c, _selected: select } : c)))
   }
 
   const importData = async () => {
-    const toImport = contacts.filter((c) => c._selected && c._isValid)
+    const toImport = preview.filter((c) => c._selected && c._isValid)
     if (toImport.length === 0) return
 
     setLoading(true)
     setError(null)
 
     try {
-      const inserted = await batchAddContactsToSupabase(
+      const inserted = await importContactsToSupabase(
         toImport.map((c) => ({
           firstName: c.firstName,
           lastName: c.lastName,
@@ -59,6 +66,7 @@ export function useImportContacts(eventId: string, onSuccess: (inserted: Contact
           status: 'active',
         })),
       )
+      setImportedCount(inserted.length)
       onSuccess(inserted)
     } catch (err: any) {
       if (err.code === '23505' || err.message?.includes('Unique violation')) {
@@ -78,8 +86,9 @@ export function useImportContacts(eventId: string, onSuccess: (inserted: Contact
   const reset = () => {
     setStep(1)
     setFile(null)
-    setContacts([])
+    setPreview([])
     setError(null)
+    setImportedCount(0)
   }
 
   return {
@@ -87,7 +96,8 @@ export function useImportContacts(eventId: string, onSuccess: (inserted: Contact
     file,
     loading,
     error,
-    contacts,
+    preview,
+    importedCount,
     handleFileUpload,
     toggleSelection,
     toggleAll,
