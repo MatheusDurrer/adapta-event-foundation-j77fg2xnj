@@ -15,9 +15,52 @@ class MockSupabaseClient {
     this.key = key
   }
 
+  public from(table: string) {
+    return {
+      insert: (payload: any[]) => {
+        return {
+          select: () => {
+            return {
+              single: async () => {
+                await new Promise((r) => setTimeout(r, 1200)) // simulate network delay
+
+                const data = payload[0]
+
+                // Mock validations to simulate API responses
+                if (data?.email === 'error@example.com' || data?.email === 'erro@adapta.com') {
+                  return { data: null, error: { code: '23505', message: 'Unique violation' } }
+                }
+                if (data?.email === 'network@example.com') {
+                  return { data: null, error: { message: 'Network Error' } }
+                }
+
+                return {
+                  data: {
+                    id: 'mock-uuid-' + Math.random().toString(36).slice(2, 11),
+                    ...data,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                  },
+                  error: null,
+                }
+              },
+            }
+          },
+        }
+      },
+      select: () => {
+        return {
+          eq: () => ({
+            single: async () => ({ data: {}, error: null }),
+          }),
+        }
+      },
+    }
+  }
+
   public auth = {
     signInWithPassword: async ({ email, password }: any) => {
-      await new Promise((r) => setTimeout(r, 1200)) // simulate network delay
+      await new Promise((r) => setTimeout(r, 1200))
       if (!email || !password) {
         return { error: { message: 'Credenciais inválidas' }, data: { user: null, session: null } }
       }
@@ -49,7 +92,7 @@ class MockSupabaseClient {
       return { data: { session: null }, error: null }
     },
 
-    onAuthStateChange: (callback: any) => {
+    onAuthStateChange: () => {
       return { data: { subscription: { unsubscribe: () => {} } } }
     },
   }
