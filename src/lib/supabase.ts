@@ -80,11 +80,61 @@ class MockSupabaseClient {
         return queryBuilder
       },
       select: () => {
-        return {
-          eq: () => ({
-            single: async () => ({ data: {}, error: null }),
-          }),
+        const chainable: any = {
+          eq: () => chainable,
+          neq: () => chainable,
+          not: () => chainable,
+          is: () => chainable,
+          in: () => chainable,
+          order: () => chainable,
+          limit: () => chainable,
+          single: async () => {
+            await new Promise((r) => setTimeout(r, 800))
+            return { data: {}, error: null }
+          },
+          then: (resolve: any) => {
+            setTimeout(() => {
+              let mockData: any[] = []
+
+              if (table === 'campaign_sends') {
+                mockData = Array.from({ length: 450 }).map((_, i) => ({
+                  id: `send-${i}`,
+                  contact_id: `contact-${i}`,
+                  event_id: 'event-123',
+                  sent_at: i < 410 ? new Date().toISOString() : null,
+                  error_message: i >= 410 && i < 430 ? 'Bounce' : null,
+                }))
+              } else if (table === 'contacts') {
+                mockData = Array.from({ length: 500 }).map((_, i) => ({
+                  id: `contact-${i}`,
+                  event_id: 'event-123',
+                }))
+              } else if (table === 'checkins') {
+                const generateHour = () => {
+                  const rand = Math.random()
+                  if (rand < 0.1) return 8 + Math.floor(Math.random() * 2)
+                  if (rand < 0.6) return 10 + Math.floor(Math.random() * 3)
+                  if (rand < 0.8) return 13 + Math.floor(Math.random() * 4)
+                  return 17 + Math.floor(Math.random() * 4)
+                }
+
+                mockData = Array.from({ length: 320 }).map((_, i) => {
+                  const hour = generateHour()
+                  return {
+                    id: `checkin-${i}`,
+                    event_id: 'event-123',
+                    created_at: `2023-10-10T${hour.toString().padStart(2, '0')}:30:00Z`,
+                  }
+                })
+              } else {
+                mockData = [{ id: 'mock-1' }]
+              }
+
+              resolve({ data: mockData, error: null })
+            }, 600)
+          },
         }
+        return chainable
       },
     }
   }
