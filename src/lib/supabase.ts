@@ -18,35 +18,46 @@ class MockSupabaseClient {
   public from(table: string) {
     return {
       insert: (payload: any[]) => {
-        return {
-          select: () => {
+        const execute = async () => {
+          await new Promise((r) => setTimeout(r, 1200)) // simulate network delay
+
+          const hasErrorEmail = payload.find(
+            (d) => d.email === 'error@example.com' || d.email === 'erro@adapta.com',
+          )
+          if (hasErrorEmail) {
             return {
-              single: async () => {
-                await new Promise((r) => setTimeout(r, 1200)) // simulate network delay
-
-                const data = payload[0]
-
-                // Mock validations to simulate API responses
-                if (data?.email === 'error@example.com' || data?.email === 'erro@adapta.com') {
-                  return { data: null, error: { code: '23505', message: 'Unique violation' } }
-                }
-                if (data?.email === 'network@example.com') {
-                  return { data: null, error: { message: 'Network Error' } }
-                }
-
-                return {
-                  data: {
-                    id: 'mock-uuid-' + Math.random().toString(36).slice(2, 11),
-                    ...data,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                  },
-                  error: null,
-                }
-              },
+              data: null,
+              error: { code: '23505', message: `Unique violation: ${hasErrorEmail.email}` },
             }
+          }
+          const hasNetworkError = payload.find((d) => d.email === 'network@example.com')
+          if (hasNetworkError) {
+            return { data: null, error: { message: 'Network Error' } }
+          }
+
+          const inserted = payload.map((d) => ({
+            id: 'mock-uuid-' + Math.random().toString(36).slice(2, 11),
+            ...d,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }))
+
+          return { data: inserted, error: null }
+        }
+
+        const chainable: any = {
+          select: () => chainable,
+          single: async () => {
+            const res = await execute()
+            if (res.error) return res
+            return { data: res.data ? res.data[0] : null, error: null }
+          },
+          then: (resolve: any, reject: any) => {
+            execute().then(resolve).catch(reject)
           },
         }
+
+        return chainable
       },
       update: (payload: any) => {
         const queryBuilder = {

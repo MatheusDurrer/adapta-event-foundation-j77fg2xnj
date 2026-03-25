@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { PageHeader } from '@/components/shared/PageHeader'
-import { Users, Plus, Edit2, Trash2 } from 'lucide-react'
+import { Users, Plus, Edit2, Trash2, UploadCloud } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AddContactDialog } from '@/components/contacts/AddContactDialog'
 import { EditContactDialog } from '@/components/contacts/EditContactDialog'
+import { ImportContactsDialog } from '@/components/contacts/ImportContactsDialog'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Contact } from '@/types/contact'
 import {
   Table,
@@ -49,12 +51,16 @@ const MOCK_CONTACTS: Contact[] = Array.from({ length: 45 }).map((_, i) => ({
 export default function Contacts() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false)
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
   const [allContacts, setAllContacts] = useState<Contact[]>(MOCK_CONTACTS)
   const [displayedContacts, setDisplayedContacts] = useState<Contact[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
+
+  // Mocking role to demonstrate the RBAC criteria. Admin and Operacao have access, Gestor does not.
+  const userRole: 'admin' | 'operacao' | 'gestor' = 'admin'
 
   const totalPages = Math.max(1, Math.ceil(allContacts.length / pageSize))
 
@@ -77,6 +83,11 @@ export default function Contacts() {
     setPage(1)
   }
 
+  const handleImportSuccess = (newContacts: Contact[]) => {
+    setAllContacts((prev) => [...newContacts, ...prev])
+    setPage(1)
+  }
+
   const handleEditSuccess = (updatedContact: Contact) => {
     setAllContacts((prev) => prev.map((c) => (c.id === updatedContact.id ? updatedContact : c)))
   }
@@ -89,7 +100,27 @@ export default function Contacts() {
     <div className="animate-fade-in pb-10">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-8 gap-4">
         <PageHeader title="Contatos" />
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
+          {userRole !== 'gestor' && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="inline-flex">
+                  <Button
+                    variant="secondary"
+                    onClick={() => setIsImportDialogOpen(true)}
+                    disabled={userRole === 'gestor'}
+                    className="gap-2 shadow-sm"
+                  >
+                    <UploadCloud className="h-4 w-4" /> Importar de Planilha
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              {userRole === 'gestor' && (
+                <TooltipContent>Apenas Admin e Operacao podem importar</TooltipContent>
+              )}
+            </Tooltip>
+          )}
+
           <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2 shadow-sm">
             <Plus className="h-4 w-4" /> Adicionar Contato
           </Button>
@@ -105,9 +136,30 @@ export default function Contacts() {
           <p className="text-muted-foreground mb-6 max-w-sm text-center">
             Os contatos aparecerão aqui assim que as inscrições começarem.
           </p>
-          <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2 shadow-sm">
-            <Plus className="h-4 w-4" /> Adicionar Contato
-          </Button>
+          <div className="flex items-center gap-4">
+            {userRole !== 'gestor' && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="inline-flex">
+                    <Button
+                      variant="secondary"
+                      onClick={() => setIsImportDialogOpen(true)}
+                      disabled={userRole === 'gestor'}
+                      className="gap-2 shadow-sm"
+                    >
+                      <UploadCloud className="h-4 w-4" /> Importar de Planilha
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                {userRole === 'gestor' && (
+                  <TooltipContent>Apenas Admin e Operacao podem importar</TooltipContent>
+                )}
+              </Tooltip>
+            )}
+            <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2 shadow-sm">
+              <Plus className="h-4 w-4" /> Adicionar Contato
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">
@@ -287,6 +339,15 @@ export default function Contacts() {
             </div>
           </div>
         </div>
+      )}
+
+      {userRole !== 'gestor' && (
+        <ImportContactsDialog
+          open={isImportDialogOpen}
+          onOpenChange={setIsImportDialogOpen}
+          eventId="evt-123"
+          onSuccess={handleImportSuccess}
+        />
       )}
 
       <AddContactDialog

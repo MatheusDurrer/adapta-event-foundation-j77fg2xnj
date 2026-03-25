@@ -76,3 +76,38 @@ export async function editContactInSupabase(
     updatedAt: data.updated_at,
   }
 }
+
+export async function batchAddContactsToSupabase(
+  contacts: Omit<Contact, 'id' | 'createdAt' | 'updatedAt'>[],
+): Promise<Contact[]> {
+  const dbPayload = contacts.map((c) => ({
+    first_name: c.firstName,
+    last_name: c.lastName,
+    email: c.email,
+    cpf: c.cpf,
+    phone: c.phone,
+    company: c.company,
+    event_id: c.eventId,
+    status: c.status || 'active',
+  }))
+
+  const { data, error } = await supabase.from('contacts').insert(dbPayload).select()
+
+  if (error) {
+    throw error
+  }
+
+  return (data || []).map((d: any) => ({
+    id: d.id,
+    firstName: d.first_name,
+    lastName: d.last_name,
+    email: d.email,
+    cpf: d.cpf,
+    phone: d.phone,
+    company: d.company,
+    eventId: d.event_id,
+    status: d.status,
+    createdAt: d.created_at,
+    updatedAt: d.updated_at,
+  }))
+}
