@@ -50,40 +50,45 @@ export function Droppable({
   children,
 }: {
   droppableId: string
-  children: (provided: any) => ReactNode
+  children: (provided: any, snapshot: { isDraggingOver: boolean }) => ReactNode
 }) {
   const { draggedIndex, dragOverIndex, onDragEnd, setDraggedIndex, setDragOverIndex } =
     useContext(DndContext)
 
-  return children({
-    droppableProps: {
-      'data-droppable-id': droppableId,
-      onDragOver: (e: any) => {
-        e.preventDefault()
-        e.dataTransfer.dropEffect = 'move'
-      },
-      onDrop: (e: any) => {
-        e.preventDefault()
-        if (draggedIndex !== null) {
-          if (dragOverIndex !== null && draggedIndex !== dragOverIndex) {
-            onDragEnd({
-              source: { index: draggedIndex, droppableId },
-              destination: { index: dragOverIndex, droppableId },
-            })
-          } else {
-            onDragEnd({
-              source: { index: draggedIndex, droppableId },
-              destination: null,
-            })
+  const isDraggingOver = draggedIndex !== null
+
+  return children(
+    {
+      droppableProps: {
+        'data-droppable-id': droppableId,
+        onDragOver: (e: React.DragEvent) => {
+          e.preventDefault()
+          e.dataTransfer.dropEffect = 'move'
+        },
+        onDrop: (e: React.DragEvent) => {
+          e.preventDefault()
+          if (draggedIndex !== null) {
+            if (dragOverIndex !== null && draggedIndex !== dragOverIndex) {
+              onDragEnd({
+                source: { index: draggedIndex, droppableId },
+                destination: { index: dragOverIndex, droppableId },
+              })
+            } else {
+              onDragEnd({
+                source: { index: draggedIndex, droppableId },
+                destination: null,
+              })
+            }
           }
-        }
-        setDraggedIndex(null)
-        setDragOverIndex(null)
+          setDraggedIndex(null)
+          setDragOverIndex(null)
+        },
       },
+      innerRef: () => {},
+      placeholder: <div className="hidden" />,
     },
-    innerRef: () => {},
-    placeholder: <div className="hidden" />,
-  })
+    { isDraggingOver },
+  )
 }
 
 export function Draggable({
@@ -93,7 +98,7 @@ export function Draggable({
 }: {
   draggableId: string
   index: number
-  children: (provided: any, snapshot: any) => ReactNode
+  children: (provided: any, snapshot: { isDragging: boolean }) => ReactNode
 }) {
   const { draggedIndex, setDraggedIndex, dragOverIndex, setDragOverIndex } = useContext(DndContext)
 
@@ -105,12 +110,12 @@ export function Draggable({
       innerRef: () => {},
       draggableProps: {
         draggable: true,
-        onDragStart: (e: any) => {
+        onDragStart: (e: React.DragEvent) => {
           setDraggedIndex(index)
           e.dataTransfer.effectAllowed = 'move'
           e.dataTransfer.setData('text/plain', index.toString())
         },
-        onDragEnter: (e: any) => {
+        onDragEnter: (e: React.DragEvent) => {
           e.preventDefault()
           if (draggedIndex !== null && draggedIndex !== index) {
             setDragOverIndex(index)
@@ -122,17 +127,15 @@ export function Draggable({
         },
         style: isDragOver
           ? {
-              border: '2px dashed #93c5fd', // light blue border on drag over
-              backgroundColor: 'hsl(var(--accent))',
-              borderRadius: '0.375rem',
+              transform: 'scale(1.02)',
+              transition: 'transform 0.2s ease',
             }
-          : undefined,
+          : {
+              transition: 'transform 0.2s ease',
+            },
       },
       dragHandleProps: {
-        className: cn(
-          'text-muted-foreground hover:text-primary transition-colors',
-          isDragging ? 'cursor-grabbing' : 'cursor-grab',
-        ),
+        className: cn(isDragging ? 'cursor-grabbing' : 'cursor-grab'),
       },
     },
     { isDragging },

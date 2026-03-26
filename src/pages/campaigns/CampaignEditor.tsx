@@ -144,8 +144,15 @@ export default function CampaignEditor() {
 
               <DragDropContext onDragEnd={onDragEnd}>
                 <Droppable droppableId="email-blocks">
-                  {(provided) => (
-                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
+                  {(provided, snapshot) => (
+                    <div
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      className={cn(
+                        'space-y-4 rounded-md transition-colors border-2 border-transparent',
+                        snapshot.isDraggingOver && 'bg-accent border-dashed border-primary',
+                      )}
+                    >
                       {campaign.content?.map((block, i) => (
                         <Draggable key={block.id} draggableId={`block-${block.id}`} index={i}>
                           {(provided, snapshot) => (
@@ -153,7 +160,7 @@ export default function CampaignEditor() {
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               className={cn(
-                                'flex gap-2 relative transition-all duration-200 rounded-md',
+                                'flex relative transition-all duration-200 rounded-md',
                                 snapshot.isDragging && 'opacity-50 bg-secondary/50',
                               )}
                               style={provided.draggableProps.style}
@@ -161,11 +168,12 @@ export default function CampaignEditor() {
                               <div
                                 {...provided.dragHandleProps}
                                 className={cn(
-                                  'flex flex-col items-center justify-center w-8 shrink-0',
-                                  provided.dragHandleProps.className,
+                                  'flex flex-col items-center justify-center shrink-0 mr-[0.75rem]',
+                                  snapshot.isDragging ? 'cursor-grabbing' : 'cursor-grab',
+                                  provided.dragHandleProps?.className,
                                 )}
                               >
-                                <GripHorizontal className="h-[1.25rem] w-[1.25rem]" />
+                                <GripHorizontal className="h-[1.25rem] w-[1.25rem] text-muted-foreground hover:text-primary transition-colors" />
                               </div>
 
                               <div
