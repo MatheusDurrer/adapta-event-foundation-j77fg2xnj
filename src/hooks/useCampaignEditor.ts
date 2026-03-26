@@ -57,18 +57,6 @@ export function useCampaignEditor(initialId?: string) {
     setCampaign((prev) => ({ ...prev, content: (prev.content || []).filter((b) => b.id !== id) }))
   }, [])
 
-  const moveBlock = useCallback((index: number, direction: 'up' | 'down') => {
-    setCampaign((prev) => {
-      const blocks = [...(prev.content || [])]
-      if (direction === 'up' && index > 0) {
-        ;[blocks[index - 1], blocks[index]] = [blocks[index], blocks[index - 1]]
-      } else if (direction === 'down' && index < blocks.length - 1) {
-        ;[blocks[index + 1], blocks[index]] = [blocks[index], blocks[index + 1]]
-      }
-      return { ...prev, content: blocks }
-    })
-  }, [])
-
   const reorderBlocks = useCallback((fromIndex: number, toIndex: number) => {
     setCampaign((prev) => {
       const blocks = [...(prev.content || [])]
@@ -142,7 +130,6 @@ export function useCampaignEditor(initialId?: string) {
     addBlock,
     updateBlock,
     removeBlock,
-    moveBlock,
     reorderBlocks,
     handleSave,
     handleSend,
@@ -151,7 +138,7 @@ export function useCampaignEditor(initialId?: string) {
 }
 
 function createDefaultBlock(type: BlockType): CampaignBlock {
-  const id = `block-${Math.random().toString(36).substr(2, 9)}`
+  const id = `block-${Math.random().toString(36).substring(2, 9)}`
   switch (type) {
     case 'text':
       return { id, type, content: 'Novo texto', align: 'left' }

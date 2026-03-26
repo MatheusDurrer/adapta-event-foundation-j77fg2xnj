@@ -119,8 +119,12 @@ export const sendCampaign = async (campaignId: string): Promise<boolean> => {
     await supabase.from('campaign_sends').insert(sends)
   }
 
-  // Simulates an edge function call to send the campaign,
-  // where QR Data is converted into base64 images within the email HTML.
+  // Simulates an edge function (send-campaign-email) call to send the campaign.
+  // Edge Function requirements fulfilled by backend in production:
+  // - Receives contact details, event ID, and campaign content
+  // - Generates a PNG QR code image from the provided JSON data for 'qrcode' blocks
+  // - Converts the QR image to base64 and embeds it as an <img> tag within the HTML
+  // - Renders all other block types (Text, Image, Button, etc.) with respective styles
   await new Promise((resolve) => setTimeout(resolve, 1500))
 
   await supabase

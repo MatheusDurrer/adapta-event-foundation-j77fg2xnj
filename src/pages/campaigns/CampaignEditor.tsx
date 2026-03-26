@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { DragDropContext, Draggable, DropResult } from 'react-beautiful-dnd'
+import { StrictModeDroppable } from '@/components/ui/strict-mode-droppable'
 import {
   ArrowLeft,
   Plus,
@@ -16,6 +18,7 @@ import {
   Monitor,
   GripHorizontal,
 } from 'lucide-react'
+
 import { useCampaignEditor } from '@/hooks/useCampaignEditor'
 import { Button } from '@/components/ui/button'
 import {
@@ -25,11 +28,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { BlockType } from '@/types/campaign'
-
 import { CampaignSettings } from '@/components/campaigns/CampaignSettings'
 import { BlockEditor } from '@/components/campaigns/BlockEditor'
 import { EmailPreview } from '@/components/campaigns/EmailPreview'
-import { DragDropContext, Droppable, Draggable } from '@/components/ui/dnd'
 import { cn } from '@/lib/utils'
 
 export default function CampaignEditor() {
@@ -42,7 +43,6 @@ export default function CampaignEditor() {
     addBlock,
     updateBlock,
     removeBlock,
-    moveBlock,
     reorderBlocks,
     handleSave,
     handleSend,
@@ -78,7 +78,7 @@ export default function CampaignEditor() {
     { type: 'qrcode', label: 'QR Code', icon: <QrCode className="h-4 w-4 mr-2 text-primary" /> },
   ]
 
-  const onDragEnd = (result: any) => {
+  const onDragEnd = (result: DropResult) => {
     if (!result.destination) return
     if (result.destination.index === result.source.index) return
     reorderBlocks(result.source.index, result.destination.index)
@@ -143,7 +143,7 @@ export default function CampaignEditor() {
               )}
 
               <DragDropContext onDragEnd={onDragEnd}>
-                <Droppable droppableId="email-blocks">
+                <StrictModeDroppable droppableId="email-blocks">
                   {(provided, snapshot) => (
                     <div
                       {...provided.droppableProps}
@@ -168,12 +168,13 @@ export default function CampaignEditor() {
                               <div
                                 {...provided.dragHandleProps}
                                 className={cn(
-                                  'flex flex-col items-center justify-center shrink-0 mr-[0.75rem] transition-colors duration-200',
-                                  snapshot.isDragging ? 'cursor-grabbing' : 'cursor-grab',
-                                  provided.dragHandleProps?.className,
+                                  'flex flex-col items-center justify-center shrink-0 mr-[0.75rem] transition-colors duration-200 outline-none text-muted-foreground hover:text-primary',
+                                  snapshot.isDragging
+                                    ? 'cursor-grabbing'
+                                    : 'cursor-grab hover:cursor-grab',
                                 )}
                               >
-                                <GripHorizontal className="h-[1.25rem] w-[1.25rem] text-muted-foreground hover:text-primary" />
+                                <GripHorizontal className="h-[1.25rem] w-[1.25rem]" />
                               </div>
 
                               <div
@@ -184,11 +185,8 @@ export default function CampaignEditor() {
                               >
                                 <BlockEditor
                                   block={block}
-                                  index={i}
-                                  totalBlocks={campaign.content!.length}
                                   onChange={updateBlock}
                                   onDelete={removeBlock}
-                                  onMove={moveBlock}
                                 />
                               </div>
                             </div>
@@ -198,7 +196,7 @@ export default function CampaignEditor() {
                       {provided.placeholder}
                     </div>
                   )}
-                </Droppable>
+                </StrictModeDroppable>
               </DragDropContext>
 
               <div className="pt-2">

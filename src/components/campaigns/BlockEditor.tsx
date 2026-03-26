@@ -4,38 +4,17 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  ArrowUp,
-  ArrowDown,
-  Trash2,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  GripVertical,
-  Check,
-  X,
-} from 'lucide-react'
+import { Trash2, AlignLeft, AlignCenter, AlignRight, Check, X } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
-import { cn } from '@/lib/utils'
 
 interface BlockEditorProps {
   block: CampaignBlock
-  index: number
-  totalBlocks: number
   onChange: (id: string, updates: Partial<CampaignBlock>) => void
   onDelete: (id: string) => void
-  onMove: (index: number, direction: 'up' | 'down') => void
 }
 
-export function BlockEditor({
-  block,
-  index,
-  totalBlocks,
-  onChange,
-  onDelete,
-  onMove,
-}: BlockEditorProps) {
+export function BlockEditor({ block, onChange, onDelete }: BlockEditorProps) {
   const [isOpen, setIsOpen] = useState(true)
   const [localData, setLocalData] = useState<CampaignBlock>(block)
 
@@ -219,14 +198,12 @@ export function BlockEditor({
 
   return (
     <Card className="bg-card p-0 border-[1px] border-border rounded-md overflow-hidden transition-all duration-200">
-      {/* Header Summary (Visible when closed) */}
       {!isOpen && (
         <div
           className="flex items-center justify-between p-4 cursor-pointer hover:bg-secondary/50 group"
           onClick={() => setIsOpen(true)}
         >
           <div className="flex items-center gap-3">
-            <GripVertical className="h-5 w-5 text-muted-foreground opacity-50 group-hover:opacity-100" />
             <span className="text-xs font-semibold text-primary uppercase tracking-wider bg-primary/10 px-2 py-1 rounded-md">
               {block.type}
             </span>
@@ -245,35 +222,12 @@ export function BlockEditor({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground"
-              onClick={(e) => {
-                e.stopPropagation()
-                onMove(index, 'up')
-              }}
-              disabled={index === 0}
-            >
-              <ArrowUp className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground"
-              onClick={(e) => {
-                e.stopPropagation()
-                onMove(index, 'down')
-              }}
-              disabled={index === totalBlocks - 1}
-            >
-              <ArrowDown className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive hover:bg-destructive/10"
+              className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
               onClick={(e) => {
                 e.stopPropagation()
                 onDelete(block.id)
               }}
+              title="Remover bloco"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -281,7 +235,6 @@ export function BlockEditor({
         </div>
       )}
 
-      {/* Editor Form (Visible when open) */}
       {isOpen && (
         <div className="p-[1.5rem] bg-secondary/20">
           <div className="flex items-center justify-between mb-6 pb-3 border-b border-border/50">
@@ -292,26 +245,6 @@ export function BlockEditor({
               <span className="text-sm text-muted-foreground font-medium">Editando bloco</span>
             </div>
             <div className="flex gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground"
-                onClick={() => onMove(index, 'up')}
-                disabled={index === 0}
-                title="Mover para cima"
-              >
-                <ArrowUp className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground"
-                onClick={() => onMove(index, 'down')}
-                disabled={index === totalBlocks - 1}
-                title="Mover para baixo"
-              >
-                <ArrowDown className="h-4 w-4" />
-              </Button>
               <Button
                 variant="ghost"
                 size="icon"

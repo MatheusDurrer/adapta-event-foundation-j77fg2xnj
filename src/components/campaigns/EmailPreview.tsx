@@ -1,5 +1,6 @@
 import { CampaignBlock } from '@/types/campaign'
 import { QrCode, Linkedin, Instagram, Youtube, Twitter, Facebook } from 'lucide-react'
+import { QRCodeSVG } from 'qrcode.react'
 
 interface EmailPreviewProps {
   blocks: CampaignBlock[]
@@ -90,7 +91,6 @@ function PreviewBlock({ block }: { block: CampaignBlock }) {
         </div>
       )
     case 'qrcode': {
-      // Create mockup data representing the specific null UUID structure required by the acceptance criteria
       const qrData = JSON.stringify({
         contactId: '00000000-0000-0000-0000-000000000000',
         eventId: '00000000-0000-0000-0000-000000000000',
@@ -98,15 +98,21 @@ function PreviewBlock({ block }: { block: CampaignBlock }) {
         lastName: 'User',
         company: 'Company',
       })
-      // Using an external API to render the QR Code since qrcode.react is not available in dependencies
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&ecc=H&margin=10&data=${encodeURIComponent(
-        qrData,
-      )}`
 
       return (
         <div className="px-6 py-10 flex flex-col items-center justify-center bg-white text-black">
-          <div className="w-[200px] h-[200px] bg-white flex items-center justify-center relative shadow-sm overflow-hidden">
-            <img src={qrUrl} alt="QR Code Preview" width={200} height={200} className="block" />
+          <div
+            className="bg-white flex items-center justify-center relative shadow-sm overflow-hidden"
+            style={{ width: '200px', height: '200px', padding: '10px' }}
+          >
+            <QRCodeSVG
+              value={qrData}
+              size={180}
+              level="H"
+              bgColor="#ffffff"
+              fgColor="#000000"
+              includeMargin={false}
+            />
           </div>
         </div>
       )
