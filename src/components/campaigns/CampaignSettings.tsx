@@ -22,7 +22,7 @@ export function CampaignSettings({ campaign, updateField }: CampaignSettingsProp
     <div className="space-y-6">
       <div className="space-y-4">
         <div className="grid gap-2">
-          <Label htmlFor="subject">
+          <Label htmlFor="subject" className="text-[0.875rem] font-[500]">
             Assunto da Campanha <span className="text-destructive">*</span>
           </Label>
           <Input
@@ -30,38 +30,47 @@ export function CampaignSettings({ campaign, updateField }: CampaignSettingsProp
             placeholder="Ex: Último aviso para o evento..."
             value={campaign.subject || ''}
             onChange={(e) => updateField('subject', e.target.value)}
+            className="border-[1px] border-input rounded-md focus-visible:ring-primary"
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="senderName">Nome do Remetente</Label>
+            <Label htmlFor="senderName" className="text-[0.875rem] font-[500]">
+              Nome do Remetente
+            </Label>
             <Input
               id="senderName"
               placeholder="Sua Empresa / Evento"
               value={campaign.senderName || ''}
               onChange={(e) => updateField('senderName', e.target.value)}
+              className="border-[1px] border-input rounded-md focus-visible:ring-primary"
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="senderEmail">Email do Remetente</Label>
+            <Label htmlFor="senderEmail" className="text-[0.875rem] font-[500]">
+              Email do Remetente
+            </Label>
             <Input
               id="senderEmail"
               type="email"
               placeholder="contato@empresa.com"
               value={campaign.senderEmail || ''}
               onChange={(e) => updateField('senderEmail', e.target.value)}
+              className="border-[1px] border-input rounded-md focus-visible:ring-primary"
             />
           </div>
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="recipients">Destinatários</Label>
+          <Label htmlFor="recipients" className="text-[0.875rem] font-[500]">
+            Destinatários
+          </Label>
           <Select
             value={campaign.recipientListId || 'all'}
             onValueChange={(val) => updateField('recipientListId', val)}
           >
-            <SelectTrigger>
+            <SelectTrigger className="border-[1px] border-input rounded-md focus-visible:ring-primary">
               <SelectValue placeholder="Selecione os contatos" />
             </SelectTrigger>
             <SelectContent>
@@ -73,8 +82,8 @@ export function CampaignSettings({ campaign, updateField }: CampaignSettingsProp
         </div>
       </div>
 
-      <div className="pt-4 border-t">
-        <Label className="mb-3 block text-base">Agendamento</Label>
+      <div className="pt-6 border-t border-border">
+        <Label className="mb-3 block text-[0.875rem] font-[500]">Agendamento</Label>
         <RadioGroup
           value={isScheduled ? 'schedule' : 'now'}
           onValueChange={(val) => {
@@ -82,18 +91,22 @@ export function CampaignSettings({ campaign, updateField }: CampaignSettingsProp
             else
               updateField('scheduledAt', new Date(Date.now() + 86400000).toISOString().slice(0, 16))
           }}
-          className="flex flex-col space-y-2"
+          className="flex flex-col space-y-3"
         >
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="now" id="r-now" />
-            <Label htmlFor="r-now" className="font-normal cursor-pointer">
-              Enviar Agora
+            <RadioGroupItem value="now" id="r-now" className="border-primary text-primary" />
+            <Label htmlFor="r-now" className="font-normal cursor-pointer text-sm">
+              Enviar Imediatamente
             </Label>
           </div>
           <div className="flex flex-col space-y-3">
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="schedule" id="r-schedule" />
-              <Label htmlFor="r-schedule" className="font-normal cursor-pointer">
+              <RadioGroupItem
+                value="schedule"
+                id="r-schedule"
+                className="border-primary text-primary"
+              />
+              <Label htmlFor="r-schedule" className="font-normal cursor-pointer text-sm">
                 Agendar para data e hora
               </Label>
             </div>
@@ -101,7 +114,7 @@ export function CampaignSettings({ campaign, updateField }: CampaignSettingsProp
               <div className="ml-6 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
                 <Input
                   type="datetime-local"
-                  className="w-auto"
+                  className="w-auto border-[1px] border-input rounded-md focus-visible:ring-primary"
                   value={campaign.scheduledAt?.slice(0, 16) || ''}
                   onChange={(e) =>
                     updateField('scheduledAt', new Date(e.target.value).toISOString())

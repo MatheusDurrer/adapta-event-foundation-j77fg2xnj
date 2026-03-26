@@ -7,20 +7,22 @@ interface EmailPreviewProps {
 
 export function EmailPreview({ blocks }: EmailPreviewProps) {
   return (
-    <div className="w-full bg-slate-100 min-h-[600px] flex justify-center py-8 px-4 rounded-lg border">
-      <div className="w-full max-w-[600px] bg-white shadow-sm rounded-md overflow-hidden flex flex-col">
-        {blocks.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-10 text-center">
-            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-              <QrCode className="h-8 w-8 text-slate-300" />
-            </div>
-            <p>Seu email está vazio.</p>
-            <p className="text-sm">Adicione blocos para começar a montar sua campanha.</p>
+    <div className="w-full bg-white shadow-subtle border-[1px] border-border rounded-md overflow-hidden flex flex-col">
+      {blocks.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-12 text-center bg-slate-50 min-h-[400px]">
+          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm border border-slate-100">
+            <QrCode className="h-8 w-8 text-slate-300" />
           </div>
-        ) : (
-          blocks.map((block) => <PreviewBlock key={block.id} block={block} />)
-        )}
-      </div>
+          <p className="font-medium text-slate-600 mb-1">Preview Vazio</p>
+          <p className="text-sm text-slate-400">Os blocos adicionados aparecerão aqui.</p>
+        </div>
+      ) : (
+        <div className="flex flex-col w-full bg-white">
+          {blocks.map((block) => (
+            <PreviewBlock key={block.id} block={block} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -30,7 +32,9 @@ function PreviewBlock({ block }: { block: CampaignBlock }) {
     case 'text':
       return (
         <div className="px-6 py-4" style={{ textAlign: block.align as any }}>
-          <p className="text-slate-800 whitespace-pre-wrap">{block.content}</p>
+          <p className="text-[1rem] leading-[1.5] text-slate-700 whitespace-pre-wrap font-sans">
+            {block.content}
+          </p>
         </div>
       )
     case 'image':
@@ -39,19 +43,19 @@ function PreviewBlock({ block }: { block: CampaignBlock }) {
           <img
             src={block.imageUrl}
             alt="Email banner"
-            style={{ width: block.width || '100%', height: block.height || 'auto' }}
-            className="max-w-full object-cover"
+            className="w-full h-auto object-cover block"
+            style={{ maxWidth: '100%', border: 'none' }}
           />
         </div>
       )
     case 'button':
       return (
-        <div className="px-6 py-4 flex justify-center">
+        <div className="px-6 py-6 flex justify-center">
           <a
-            href={block.link}
+            href={block.link || '#'}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-6 py-3 rounded text-white font-medium text-center no-underline"
+            className="inline-block px-8 py-3 rounded-md text-white font-[600] text-center no-underline text-base shadow-sm transition-transform hover:-translate-y-0.5"
             style={{ backgroundColor: block.color || '#0f172a' }}
           >
             {block.label}
@@ -60,37 +64,42 @@ function PreviewBlock({ block }: { block: CampaignBlock }) {
       )
     case 'divider':
       return (
-        <div className="px-6 py-2">
-          <hr style={{ borderColor: block.color || '#e2e8f0' }} />
+        <div className="px-6 py-4">
+          <hr className="border-t-[1px]" style={{ borderColor: block.color || '#e2e8f0' }} />
         </div>
       )
     case 'spacer':
-      return <div style={{ height: `${block.height}px` }} />
+      return <div style={{ height: `${block.height}px` }} className="w-full" />
     case 'social':
       return (
-        <div className="px-6 py-4 flex justify-center gap-4">
+        <div className="px-6 py-6 flex flex-row justify-center gap-[1rem]">
           {block.platforms.map((p) => (
-            <div
+            <a
               key={p}
-              className="h-8 w-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-500"
+              href="#"
+              className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors"
             >
-              {p === 'LinkedIn' && <Linkedin className="h-4 w-4" />}
-              {p === 'Instagram' && <Instagram className="h-4 w-4" />}
-              {p === 'YouTube' && <Youtube className="h-4 w-4" />}
-              {p === 'X' && <Twitter className="h-4 w-4" />}
-              {p === 'Facebook' && <Facebook className="h-4 w-4" />}
-            </div>
+              {p === 'LinkedIn' && <Linkedin className="h-5 w-5" />}
+              {p === 'Instagram' && <Instagram className="h-5 w-5" />}
+              {p === 'YouTube' && <Youtube className="h-5 w-5" />}
+              {p === 'X' && <Twitter className="h-5 w-5" />}
+              {p === 'Facebook' && <Facebook className="h-5 w-5" />}
+              {p === 'Pinterest' && <div className="font-bold font-serif text-lg">P</div>}
+            </a>
           ))}
         </div>
       )
     case 'qrcode':
       return (
-        <div className="px-6 py-8 flex flex-col items-center justify-center bg-slate-50 border-y border-slate-100">
-          <div className="p-4 bg-white border border-slate-200 rounded shadow-sm mb-3">
-            <QrCode className="h-24 w-24 text-slate-800" />
+        <div className="px-6 py-10 flex flex-col items-center justify-center bg-slate-50/50 border-y border-slate-100">
+          <div className="w-[10rem] h-[10rem] bg-white border border-slate-200 rounded-md shadow-sm mb-4 flex items-center justify-center relative overflow-hidden group">
+            <QrCode className="h-20 w-20 text-slate-800" />
+            <div className="absolute inset-0 bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="text-sm font-semibold text-slate-600">QR Code</span>
+            </div>
           </div>
-          <p className="text-xs text-slate-500 max-w-[250px] text-center">
-            QR code único por participante será gerado automaticamente no envio.
+          <p className="text-xs text-slate-500 max-w-[250px] text-center font-medium">
+            Ingresso do Participante
           </p>
         </div>
       )
