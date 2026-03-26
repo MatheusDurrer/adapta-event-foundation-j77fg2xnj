@@ -114,11 +114,21 @@ class MockSupabaseClient {
                   event_id: 'event-123',
                   sent_at: i < 410 ? new Date().toISOString() : null,
                   error_message: i >= 410 && i < 430 ? 'Bounce' : null,
+                  qr_code_data: JSON.stringify({
+                    contactId: `contact-${i}`,
+                    eventId: 'event-123',
+                    firstName: 'Mock',
+                    lastName: `User ${i}`,
+                    company: 'Adapta',
+                  }),
                 }))
               } else if (table === 'contacts') {
                 mockData = Array.from({ length: 500 }).map((_, i) => ({
                   id: `contact-${i}`,
                   event_id: 'event-123',
+                  firstName: 'Contato',
+                  lastName: `${i}`,
+                  company: 'Adapta Corp',
                 }))
               } else if (table === 'checkins') {
                 const generateHour = () => {

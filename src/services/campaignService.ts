@@ -81,13 +81,53 @@ export const saveCampaign = async (campaign: Partial<Campaign>): Promise<Campaig
   return mapToCampaign(data)
 }
 
+export const generateQRCodeForContact = (contact: any, eventId: string): string => {
+  return JSON.stringify({
+    contactId: contact.id,
+    eventId: eventId,
+    firstName: contact.firstName || '',
+    lastName: contact.lastName || '',
+    company: contact.company || '',
+  })
+}
+
 export const sendCampaign = async (campaignId: string): Promise<boolean> => {
-  // Simulates an edge function call to send the campaign
+  const campaign = await getCampaign(campaignId)
+  if (!campaign) throw new Error('Campanha não encontrada')
+
+  // Fetch recipients for the event
+  const { data: contacts, error: contactsError } = await supabase
+    .from('contacts')
+    .select('*')
+    .eq('event_id', campaign.eventId)
+
+  if (contactsError) throw contactsError
+
+  if (contacts && contacts.length > 0) {
+    const sends = contacts.map((contact: any) => {
+      const qrData = generateQRCodeForContact(contact, campaign.eventId)
+      return {
+        campaign_id: campaignId,
+        contact_id: contact.id,
+        event_id: campaign.eventId,
+        qr_code_data: qrData,
+        status: 'pending',
+      }
+    })
+
+    // Store the generated QR code data per contact
+    await supabase.from('campaign_sends').insert(sends)
+  }
+
+  // Simulates an edge function call to send the campaign,
+  // where QR Data is converted into base64 images within the email HTML.
   await new Promise((resolve) => setTimeout(resolve, 1500))
+
   await supabase
     .from('campaigns')
     .update({ status: 'sent', sent_at: new Date().toISOString() })
     .eq('id', campaignId)
+
   return true
 }
 

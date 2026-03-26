@@ -91,10 +91,58 @@ function PreviewBlock({ block }: { block: CampaignBlock }) {
       )
     case 'qrcode':
       return (
-        <div className="px-6 py-10 flex flex-col items-center justify-center">
-          <div className="w-[10rem] h-[10rem] bg-white border-[2px] border-border flex items-center justify-center">
-            <span className="text-[0.75rem] text-muted-foreground">QR Code</span>
+        <div className="px-6 py-10 flex flex-col items-center justify-center bg-white text-black">
+          <div
+            className="w-[200px] h-[200px] bg-white border-[10px] border-white flex items-center justify-center relative shadow-sm"
+            style={{ padding: '10px', boxSizing: 'border-box' }}
+          >
+            <svg viewBox="0 0 100 100" className="w-full h-full text-black fill-current">
+              <rect x="0" y="0" width="100" height="100" fill="white" />
+              <rect
+                x="5"
+                y="5"
+                width="25"
+                height="25"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="5"
+              />
+              <rect x="10" y="10" width="15" height="15" />
+              <rect
+                x="70"
+                y="5"
+                width="25"
+                height="25"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="5"
+              />
+              <rect x="75" y="10" width="15" height="15" />
+              <rect
+                x="5"
+                y="70"
+                width="25"
+                height="25"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="5"
+              />
+              <rect x="10" y="75" width="15" height="15" />
+              <rect x="40" y="5" width="10" height="10" />
+              <rect x="55" y="15" width="10" height="10" />
+              <rect x="5" y="40" width="10" height="10" />
+              <rect x="25" y="50" width="10" height="10" />
+              <rect x="40" y="40" width="20" height="20" />
+              <rect x="70" y="40" width="10" height="10" />
+              <rect x="85" y="50" width="10" height="10" />
+              <rect x="40" y="70" width="10" height="10" />
+              <rect x="55" y="85" width="10" height="10" />
+              <rect x="70" y="70" width="25" height="25" />
+            </svg>
           </div>
+          <p className="mt-4 text-sm text-center font-medium text-slate-700">
+            QR code unico por participante sera gerado ao enviar
+          </p>
         </div>
       )
     default:
