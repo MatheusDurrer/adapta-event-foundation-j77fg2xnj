@@ -14,7 +14,7 @@ import {
   Save,
   Smartphone,
   Monitor,
-  GripVertical,
+  GripHorizontal,
 } from 'lucide-react'
 import { useCampaignEditor } from '@/hooks/useCampaignEditor'
 import { Button } from '@/components/ui/button'
@@ -154,7 +154,7 @@ export default function CampaignEditor() {
                               {...provided.draggableProps}
                               className={cn(
                                 'flex gap-2 relative transition-all duration-200 rounded-md',
-                                snapshot.isDragging && 'opacity-50 bg-secondary',
+                                snapshot.isDragging && 'opacity-50 bg-secondary/50',
                               )}
                               style={provided.draggableProps.style}
                             >
@@ -165,7 +165,7 @@ export default function CampaignEditor() {
                                   provided.dragHandleProps.className,
                                 )}
                               >
-                                <GripVertical className="h-5 w-5" />
+                                <GripHorizontal className="h-[1.25rem] w-[1.25rem]" />
                               </div>
 
                               <div
