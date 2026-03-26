@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { InlineBlockEditor } from '@/components/campaigns/InlineBlockEditor'
+import { BlockPreview } from '@/components/campaigns/BlockPreview'
 
 export default function CampaignEditor() {
   const { id } = useParams()
@@ -54,9 +54,9 @@ export default function CampaignEditor() {
   const blockTypes = [
     { type: 'text', icon: Type, label: 'Texto' },
     { type: 'image', icon: ImageIcon, label: 'Imagem' },
-    { type: 'button', icon: Link2, label: 'Botão' },
+    { type: 'button', icon: Link2, label: 'Botao' },
     { type: 'divider', icon: Minus, label: 'Divisor' },
-    { type: 'spacer', icon: LayoutList, label: 'Espaçador' },
+    { type: 'spacer', icon: LayoutList, label: 'Espacador' },
     { type: 'social', icon: Share2, label: 'Social' },
     { type: 'qrcode', icon: QrCode, label: 'QR Code' },
   ] as const
@@ -121,7 +121,7 @@ export default function CampaignEditor() {
                   ref={provided.innerRef}
                   className={cn(
                     'min-h-[400px] h-full flex flex-col',
-                    snapshot.isDraggingOver && 'ring-[2px] ring-primary/50 bg-primary/5',
+                    snapshot.isDraggingOver && 'ring-[2px] ring-blue-300/50 bg-blue-50',
                   )}
                 >
                   {(campaign.content || []).map((block, index) => (
@@ -133,8 +133,9 @@ export default function CampaignEditor() {
                           className={cn('transition-opacity', snapshot.isDragging && 'opacity-50')}
                           style={provided.draggableProps.style}
                         >
-                          <InlineBlockEditor
+                          <BlockPreview
                             block={block}
+                            isEditingEnabled
                             isSelected={selectedBlockId === block.id}
                             onSelect={() => setSelectedBlockId(block.id)}
                             onClickOutside={() => setSelectedBlockId(null)}
@@ -169,8 +170,11 @@ export default function CampaignEditor() {
         <div className="fixed bottom-8 right-8 z-50 animate-fade-in-up">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="icon" className="h-14 w-14 rounded-full shadow-xl">
-                <Plus className="h-6 w-6" />
+              <Button
+                size="icon"
+                className="h-12 w-12 rounded-full shadow-lg bg-primary hover:bg-primary/90 text-white"
+              >
+                <Plus className="h-6 w-6 text-white" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48 mb-2">
