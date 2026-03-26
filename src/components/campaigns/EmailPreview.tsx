@@ -91,16 +91,10 @@ function PreviewBlock({ block }: { block: CampaignBlock }) {
       )
     case 'qrcode':
       return (
-        <div className="px-6 py-10 flex flex-col items-center justify-center bg-slate-50/50 border-y border-slate-100">
-          <div className="w-[10rem] h-[10rem] bg-white border border-slate-200 rounded-md shadow-sm mb-4 flex items-center justify-center relative overflow-hidden group">
-            <QrCode className="h-20 w-20 text-slate-800" />
-            <div className="absolute inset-0 bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <span className="text-sm font-semibold text-slate-600">QR Code</span>
-            </div>
+        <div className="px-6 py-10 flex flex-col items-center justify-center">
+          <div className="w-[10rem] h-[10rem] bg-white border-[2px] border-border flex items-center justify-center">
+            <span className="text-[0.75rem] text-muted-foreground">QR Code</span>
           </div>
-          <p className="text-xs text-slate-500 max-w-[250px] text-center font-medium">
-            Ingresso do Participante
-          </p>
         </div>
       )
     default:

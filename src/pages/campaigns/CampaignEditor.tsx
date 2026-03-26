@@ -29,6 +29,7 @@ import { BlockType } from '@/types/campaign'
 import { CampaignSettings } from '@/components/campaigns/CampaignSettings'
 import { BlockEditor } from '@/components/campaigns/BlockEditor'
 import { EmailPreview } from '@/components/campaigns/EmailPreview'
+import { DragDropContext, Droppable, Draggable } from '@/components/ui/dnd'
 import { cn } from '@/lib/utils'
 
 export default function CampaignEditor() {
@@ -48,9 +49,6 @@ export default function CampaignEditor() {
   } = useCampaignEditor(id)
 
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop')
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
-  const [draggableIndex, setDraggableIndex] = useState<number | null>(null)
 
   useEffect(() => {
     return () => {
@@ -79,6 +77,12 @@ export default function CampaignEditor() {
     },
     { type: 'qrcode', label: 'QR Code', icon: <QrCode className="h-4 w-4 mr-2 text-primary" /> },
   ]
+
+  const onDragEnd = (result: any) => {
+    if (!result.destination) return
+    if (result.destination.index === result.source.index) return
+    reorderBlocks(result.source.index, result.destination.index)
+  }
 
   return (
     <div className="animate-fade-in pb-10">
@@ -137,115 +141,57 @@ export default function CampaignEditor() {
                   Seu email está vazio. Adicione blocos para começar.
                 </div>
               )}
-              {campaign.content?.map((block, i) => {
-                const isDragging = draggedIndex === i
-                const isDragOver = dragOverIndex === i
 
-                return (
-                  <div
-                    key={block.id}
-                    className={cn(
-                      'drop-zone flex gap-2 relative transition-all duration-200 rounded-md',
-                      isDragging && 'opacity-50 bg-secondary',
-                      isDragOver && 'border-[2px] border-dashed border-primary bg-accent p-[1rem]',
-                    )}
-                    data-index={i}
-                    draggable={draggableIndex === i}
-                    onDragStart={(e) => {
-                      setDraggedIndex(i)
-                      e.dataTransfer.effectAllowed = 'move'
-                      e.dataTransfer.setData('text/plain', i.toString())
-                    }}
-                    onDragEnter={(e) => {
-                      e.preventDefault()
-                      if (draggedIndex !== null && draggedIndex !== i) {
-                        setDragOverIndex(i)
-                      }
-                    }}
-                    onDragOver={(e) => {
-                      e.preventDefault()
-                      e.dataTransfer.dropEffect = 'move'
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault()
-                      if (draggedIndex !== null && draggedIndex !== i) {
-                        reorderBlocks(draggedIndex, i)
-                      }
-                      setDraggedIndex(null)
-                      setDragOverIndex(null)
-                      setDraggableIndex(null)
-                    }}
-                    onDragEnd={() => {
-                      setDraggedIndex(null)
-                      setDragOverIndex(null)
-                      setDraggableIndex(null)
-                    }}
-                    onTouchStart={(e) => {
-                      const target = e.target as HTMLElement
-                      if (target.closest('.drag-handle')) {
-                        setDraggedIndex(i)
-                        document.body.style.overflow = 'hidden'
-                      }
-                    }}
-                    onTouchMove={(e) => {
-                      if (draggedIndex === null) return
-                      const touch = e.touches[0]
-                      const elem = document.elementFromPoint(touch.clientX, touch.clientY)
-                      const dropZone = elem?.closest('.drop-zone')
-                      if (dropZone) {
-                        const indexStr = dropZone.getAttribute('data-index')
-                        if (indexStr !== null) {
-                          const index = parseInt(indexStr, 10)
-                          if (index !== draggedIndex) {
-                            setDragOverIndex(index)
-                          } else {
-                            setDragOverIndex(null)
-                          }
-                        }
-                      } else {
-                        setDragOverIndex(null)
-                      }
-                    }}
-                    onTouchEnd={(e) => {
-                      document.body.style.overflow = ''
-                      if (
-                        draggedIndex !== null &&
-                        dragOverIndex !== null &&
-                        draggedIndex !== dragOverIndex
-                      ) {
-                        reorderBlocks(draggedIndex, dragOverIndex)
-                      }
-                      setDraggedIndex(null)
-                      setDragOverIndex(null)
-                      setDraggableIndex(null)
-                    }}
-                  >
-                    <div
-                      className={cn(
-                        'drag-handle flex flex-col items-center justify-center w-8 shrink-0 text-muted-foreground hover:text-primary transition-colors',
-                        isDragging ? 'cursor-grabbing' : 'cursor-grab',
-                      )}
-                      onMouseEnter={() => setDraggableIndex(i)}
-                      onMouseLeave={() => setDraggableIndex(null)}
-                      onTouchStart={() => setDraggableIndex(i)}
-                      onTouchEnd={() => setDraggableIndex(null)}
-                    >
-                      <GripVertical className="h-5 w-5" />
-                    </div>
+              <DragDropContext onDragEnd={onDragEnd}>
+                <Droppable droppableId="email-blocks">
+                  {(provided) => (
+                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
+                      {campaign.content?.map((block, i) => (
+                        <Draggable key={block.id} draggableId={`block-${block.id}`} index={i}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className={cn(
+                                'flex gap-2 relative transition-all duration-200 rounded-md',
+                                snapshot.isDragging && 'opacity-50 bg-secondary',
+                              )}
+                              style={provided.draggableProps.style}
+                            >
+                              <div
+                                {...provided.dragHandleProps}
+                                className={cn(
+                                  'flex flex-col items-center justify-center w-8 shrink-0',
+                                  provided.dragHandleProps.className,
+                                )}
+                              >
+                                <GripVertical className="h-5 w-5" />
+                              </div>
 
-                    <div className={cn('flex-1 min-w-0', isDragging && 'pointer-events-none')}>
-                      <BlockEditor
-                        block={block}
-                        index={i}
-                        totalBlocks={campaign.content!.length}
-                        onChange={updateBlock}
-                        onDelete={removeBlock}
-                        onMove={moveBlock}
-                      />
+                              <div
+                                className={cn(
+                                  'flex-1 min-w-0',
+                                  snapshot.isDragging && 'pointer-events-none',
+                                )}
+                              >
+                                <BlockEditor
+                                  block={block}
+                                  index={i}
+                                  totalBlocks={campaign.content!.length}
+                                  onChange={updateBlock}
+                                  onDelete={removeBlock}
+                                  onMove={moveBlock}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
                     </div>
-                  </div>
-                )
-              })}
+                  )}
+                </Droppable>
+              </DragDropContext>
 
               <div className="pt-2">
                 <DropdownMenu>
