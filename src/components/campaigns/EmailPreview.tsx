@@ -102,8 +102,8 @@ function PreviewBlock({ block }: { block: CampaignBlock }) {
       return (
         <div className="px-6 py-10 flex flex-col items-center justify-center bg-white text-black">
           <div
-            className="bg-white flex items-center justify-center relative shadow-sm overflow-hidden"
-            style={{ width: '200px', height: '200px', padding: '10px' }}
+            className="flex items-center justify-center bg-white border-2 border-solid border-border rounded-md shadow-sm"
+            style={{ width: '200px', height: '200px' }}
           >
             <QRCodeSVG
               value={qrData}

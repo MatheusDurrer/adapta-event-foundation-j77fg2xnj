@@ -1,43 +1,35 @@
-import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { DragDropContext, Draggable, DropResult } from 'react-beautiful-dnd'
-import { StrictModeDroppable } from '@/components/ui/strict-mode-droppable'
-import {
-  ArrowLeft,
-  Plus,
-  Type,
-  Image as ImageIcon,
-  MousePointerClick,
-  Minus,
-  Maximize,
-  Share2,
-  QrCode,
-  Send,
-  Save,
-  Smartphone,
-  Monitor,
-  GripHorizontal,
-} from 'lucide-react'
-
 import { useCampaignEditor } from '@/hooks/useCampaignEditor'
-import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { BlockType } from '@/types/campaign'
-import { CampaignSettings } from '@/components/campaigns/CampaignSettings'
 import { BlockEditor } from '@/components/campaigns/BlockEditor'
 import { EmailPreview } from '@/components/campaigns/EmailPreview'
+import { DragDropContext, Draggable, DropResult } from 'react-beautiful-dnd'
+import { StrictModeDroppable } from '@/components/ui/strict-mode-droppable'
+import { Button } from '@/components/ui/button'
+import {
+  GripHorizontal,
+  ArrowLeft,
+  Send,
+  Save,
+  Type,
+  Image as ImageIcon,
+  Link2,
+  Minus,
+  LayoutList,
+  Share2,
+  QrCode,
+} from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
+import { BlockType } from '@/types/campaign'
 
 export default function CampaignEditor() {
   const { id } = useParams()
   const navigate = useNavigate()
   const {
     campaign,
+    isLoading,
     isSaving,
     updateField,
     addBlock,
@@ -48,223 +40,175 @@ export default function CampaignEditor() {
     handleSend,
   } = useCampaignEditor(id)
 
-  const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop')
-
-  useEffect(() => {
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [])
-
-  const blockOptions: { type: BlockType; label: string; icon: React.ReactNode }[] = [
-    { type: 'text', label: 'Texto', icon: <Type className="h-4 w-4 mr-2 text-primary" /> },
-    { type: 'image', label: 'Imagem', icon: <ImageIcon className="h-4 w-4 mr-2 text-primary" /> },
-    {
-      type: 'button',
-      label: 'Botão',
-      icon: <MousePointerClick className="h-4 w-4 mr-2 text-primary" />,
-    },
-    { type: 'divider', label: 'Divisor', icon: <Minus className="h-4 w-4 mr-2 text-primary" /> },
-    {
-      type: 'spacer',
-      label: 'Espaçador',
-      icon: <Maximize className="h-4 w-4 mr-2 text-primary" />,
-    },
-    {
-      type: 'social',
-      label: 'Redes Sociais',
-      icon: <Share2 className="h-4 w-4 mr-2 text-primary" />,
-    },
-    { type: 'qrcode', label: 'QR Code', icon: <QrCode className="h-4 w-4 mr-2 text-primary" /> },
-  ]
-
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return
-    if (result.destination.index === result.source.index) return
-    reorderBlocks(result.source.index, result.destination.index)
+    const sourceIndex = result.source.index
+    const destinationIndex = result.destination.index
+
+    if (sourceIndex === destinationIndex) return
+
+    reorderBlocks(sourceIndex, destinationIndex)
+  }
+
+  const blockTypes: { type: BlockType; icon: React.ElementType; label: string }[] = [
+    { type: 'text', icon: Type, label: 'Texto' },
+    { type: 'image', icon: ImageIcon, label: 'Imagem' },
+    { type: 'button', icon: Link2, label: 'Botão' },
+    { type: 'divider', icon: Minus, label: 'Divisor' },
+    { type: 'spacer', icon: LayoutList, label: 'Espaçamento' },
+    { type: 'social', icon: Share2, label: 'Social' },
+    { type: 'qrcode', icon: QrCode, label: 'QR Code' },
+  ]
+
+  if (isLoading) {
+    return (
+      <div className="p-8 text-center animate-pulse text-muted-foreground">
+        Carregando editor...
+      </div>
+    )
   }
 
   return (
-    <div className="animate-fade-in pb-10">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-[1px] border-border pb-4 mb-6 md:mb-8">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/campaigns')}
-            className="rounded-full shrink-0"
-          >
-            <ArrowLeft className="h-[1.5rem] w-[1.5rem]" />
+    <div className="flex flex-col h-[calc(100vh-4rem)] bg-background">
+      <div className="flex items-center justify-between px-6 py-4 border-b bg-card">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/campaigns')}>
+            <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
-            <h1 className="text-[1.5rem] font-[700] tracking-tight leading-none text-foreground">
-              Editor de Campanha
-            </h1>
-          </div>
+          <h1 className="text-xl font-semibold text-foreground">
+            {campaign.subject || 'Nova Campanha'}
+          </h1>
         </div>
-        <div className="flex items-center gap-3 self-end sm:self-auto">
-          <Button variant="secondary" onClick={() => handleSave('draft')} disabled={isSaving}>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => handleSave('draft')} disabled={isSaving}>
             <Save className="h-4 w-4 mr-2" /> Salvar Rascunho
           </Button>
-          <Button
-            onClick={handleSend}
-            disabled={isSaving || campaign.status === 'sent'}
-            className="bg-primary hover:bg-primary/90"
-          >
-            <Send className="h-4 w-4 mr-2" /> {campaign.scheduledAt ? 'Agendar' : 'Enviar'}
+          <Button onClick={handleSend} disabled={isSaving}>
+            <Send className="h-4 w-4 mr-2" /> Enviar Agora
           </Button>
         </div>
       </div>
 
-      {/* Editor Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-[1.5rem] lg:gap-[2rem]">
-        {/* Settings Column */}
-        <div className="flex flex-col gap-8">
-          <section>
-            <h2 className="text-[0.875rem] font-[600] uppercase text-muted-foreground mb-4 tracking-wider">
-              Configurações
-            </h2>
-            <CampaignSettings campaign={campaign} updateField={updateField} />
-          </section>
+      <div className="flex flex-1 overflow-hidden">
+        <div className="w-[450px] flex flex-col border-r bg-muted/10 overflow-hidden">
+          <Tabs defaultValue="content" className="flex-1 flex flex-col">
+            <TabsList className="w-full justify-start rounded-none border-b px-4 h-12 bg-transparent">
+              <TabsTrigger value="settings">Configurações</TabsTrigger>
+              <TabsTrigger value="content">Conteúdo</TabsTrigger>
+            </TabsList>
 
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-[0.875rem] font-[600] uppercase text-muted-foreground tracking-wider">
-                Conteúdo
-              </h2>
-            </div>
-
-            <div className="space-y-4 min-h-[200px]">
-              {(!campaign.content || campaign.content.length === 0) && (
-                <div className="text-center p-8 border-2 border-dashed rounded-lg text-muted-foreground text-sm">
-                  Seu email está vazio. Adicione blocos para começar.
+            <div className="flex-1 overflow-y-auto p-4">
+              <TabsContent value="settings" className="space-y-4 m-0 animate-fade-in">
+                <div className="space-y-2">
+                  <Label>Assunto do Email</Label>
+                  <Input
+                    value={campaign.subject || ''}
+                    onChange={(e) => updateField('subject', e.target.value)}
+                    placeholder="Digite o assunto..."
+                  />
                 </div>
-              )}
+                <div className="space-y-2">
+                  <Label>Nome do Remetente</Label>
+                  <Input
+                    value={campaign.senderName || ''}
+                    onChange={(e) => updateField('senderName', e.target.value)}
+                    placeholder="Ex: Equipe Adapta"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Email do Remetente</Label>
+                  <Input
+                    value={campaign.senderEmail || ''}
+                    onChange={(e) => updateField('senderEmail', e.target.value)}
+                    placeholder="contato@empresa.com"
+                  />
+                </div>
+              </TabsContent>
 
-              <DragDropContext onDragEnd={onDragEnd}>
-                <StrictModeDroppable droppableId="email-blocks">
-                  {(provided, snapshot) => (
-                    <div
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                      className={cn(
-                        'space-y-4 rounded-md transition-all duration-200 border-2 border-transparent',
-                        snapshot.isDraggingOver && 'bg-accent border-dashed border-primary',
-                      )}
+              <TabsContent value="content" className="space-y-6 m-0 animate-fade-in">
+                <div className="grid grid-cols-2 gap-2">
+                  {blockTypes.map(({ type, icon: Icon, label }) => (
+                    <Button
+                      key={type}
+                      variant="outline"
+                      className="justify-start h-auto py-3 px-4 bg-background"
+                      onClick={() => addBlock(type)}
                     >
-                      {campaign.content?.map((block, i) => (
-                        <Draggable key={block.id} draggableId={`block-${block.id}`} index={i}>
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              className={cn(
-                                'flex relative transition-all duration-200 rounded-md',
-                                snapshot.isDragging && 'opacity-50 bg-secondary/50',
-                              )}
-                              style={provided.draggableProps.style}
-                            >
-                              <div
-                                {...provided.dragHandleProps}
-                                className={cn(
-                                  'flex flex-col items-center justify-center shrink-0 mr-[0.75rem] transition-colors duration-200 outline-none text-muted-foreground hover:text-primary',
-                                  snapshot.isDragging
-                                    ? 'cursor-grabbing'
-                                    : 'cursor-grab hover:cursor-grab',
-                                )}
-                              >
-                                <GripHorizontal className="h-[1.25rem] w-[1.25rem]" />
-                              </div>
+                      <Icon className="h-4 w-4 mr-2 text-muted-foreground" />
+                      {label}
+                    </Button>
+                  ))}
+                </div>
 
-                              <div
-                                className={cn(
-                                  'flex-1 min-w-0',
-                                  snapshot.isDragging && 'pointer-events-none',
-                                )}
-                              >
-                                <BlockEditor
-                                  block={block}
-                                  onChange={updateBlock}
-                                  onDelete={removeBlock}
-                                />
-                              </div>
-                            </div>
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium text-muted-foreground mb-3 block">
+                    Blocos Adicionados
+                  </Label>
+
+                  <DragDropContext onDragEnd={onDragEnd}>
+                    <StrictModeDroppable droppableId="campaign-blocks">
+                      {(provided, snapshot) => (
+                        <div
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                          className={cn(
+                            'min-h-[200px] transition-all duration-200 ease-in-out rounded-md',
+                            snapshot.isDraggingOver &&
+                              'border-2 border-dashed border-primary bg-accent',
                           )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
+                        >
+                          {(campaign.content || []).map((block, index) => (
+                            <Draggable key={block.id} draggableId={block.id} index={index}>
+                              {(provided, snapshot) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  className={cn(
+                                    'mb-3 flex items-start border-[1px] border-solid border-border p-4 rounded-md bg-card transition-all duration-200 ease-in-out',
+                                    snapshot.isDragging && 'opacity-50 bg-secondary',
+                                  )}
+                                >
+                                  <div
+                                    {...provided.dragHandleProps}
+                                    className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-primary transition-colors duration-200 ease-in-out flex items-center justify-center mr-[0.75rem] p-[0.5rem] mt-1"
+                                    title="Arraste para reordenar"
+                                  >
+                                    <GripHorizontal
+                                      style={{ width: '1.25rem', height: '1.25rem' }}
+                                    />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <BlockEditor
+                                      block={block}
+                                      onChange={updateBlock}
+                                      onDelete={removeBlock}
+                                    />
+                                  </div>
+                                </div>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </StrictModeDroppable>
+                  </DragDropContext>
+
+                  {(!campaign.content || campaign.content.length === 0) && (
+                    <div className="text-center p-8 border border-dashed rounded-md bg-muted/20 text-muted-foreground text-sm">
+                      Nenhum bloco adicionado. <br />
+                      Clique nos botões acima para adicionar.
                     </div>
                   )}
-                </StrictModeDroppable>
-              </DragDropContext>
-
-              <div className="pt-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full border-dashed border-[2px] h-12 text-muted-foreground hover:text-accent-foreground hover:bg-accent hover:border-accent-foreground/30 transition-colors"
-                    >
-                      <Plus className="h-4 w-4 mr-2" /> Adicionar Bloco
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="center" className="w-56">
-                    {blockOptions.map((opt) => (
-                      <DropdownMenuItem
-                        key={opt.type}
-                        onClick={() => addBlock(opt.type)}
-                        className="cursor-pointer py-2"
-                      >
-                        {opt.icon} <span className="font-medium">{opt.label}</span>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+                </div>
+              </TabsContent>
             </div>
-          </section>
+          </Tabs>
         </div>
 
-        {/* Preview Column */}
-        <div className="lg:sticky lg:top-[2rem] self-start flex flex-col">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[0.875rem] font-[600] uppercase text-muted-foreground tracking-wider">
-              Preview do Email
-            </h2>
-            <div className="flex items-center bg-secondary rounded-md p-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  'h-8 px-3 text-xs',
-                  previewMode === 'desktop' && 'bg-background shadow-sm',
-                )}
-                onClick={() => setPreviewMode('desktop')}
-              >
-                <Monitor className="h-3 w-3 mr-1.5" /> Desktop
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  'h-8 px-3 text-xs',
-                  previewMode === 'mobile' && 'bg-background shadow-sm',
-                )}
-                onClick={() => setPreviewMode('mobile')}
-              >
-                <Smartphone className="h-3 w-3 mr-1.5" /> Mobile
-              </Button>
-            </div>
-          </div>
-
-          <div className="bg-slate-100 rounded-lg border flex justify-center items-start p-4 md:p-8 min-h-[600px] overflow-y-auto no-scrollbar max-h-[calc(100vh-12rem)]">
-            <div
-              className="w-full transition-all duration-300 ease-in-out"
-              style={{ maxWidth: previewMode === 'desktop' ? '37.5rem' : '20rem' }}
-            >
-              <EmailPreview blocks={campaign.content || []} />
-            </div>
+        <div className="flex-1 bg-muted/30 p-8 overflow-y-auto flex justify-center">
+          <div className="w-full max-w-[600px] animate-fade-in-up">
+            <EmailPreview blocks={campaign.content || []} />
           </div>
         </div>
       </div>
