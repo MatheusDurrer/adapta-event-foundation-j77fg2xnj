@@ -89,14 +89,28 @@ function PreviewBlock({ block }: { block: CampaignBlock }) {
           ))}
         </div>
       )
-    case 'qrcode':
+    case 'qrcode': {
+      // Create mockup data representing the specific null UUID structure required by the acceptance criteria
+      const qrData = JSON.stringify({
+        contactId: '00000000-0000-0000-0000-000000000000',
+        eventId: '00000000-0000-0000-0000-000000000000',
+        firstName: 'Preview',
+        lastName: 'User',
+        company: 'Company',
+      })
+      // Using an external API to render the QR Code since qrcode.react is not available in dependencies
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&ecc=H&margin=10&data=${encodeURIComponent(
+        qrData,
+      )}`
+
       return (
         <div className="px-6 py-10 flex flex-col items-center justify-center bg-white text-black">
-          <div className="w-[200px] h-[200px] bg-white border-2 border-solid border-border rounded-md flex items-center justify-center relative shadow-sm">
-            <span className="text-[0.75rem] text-muted-foreground">QR Code</span>
+          <div className="w-[200px] h-[200px] bg-white flex items-center justify-center relative shadow-sm overflow-hidden">
+            <img src={qrUrl} alt="QR Code Preview" width={200} height={200} className="block" />
           </div>
         </div>
       )
+    }
     default:
       return null
   }

@@ -149,7 +149,7 @@ export default function CampaignEditor() {
                       {...provided.droppableProps}
                       ref={provided.innerRef}
                       className={cn(
-                        'space-y-4 rounded-md transition-colors border-2 border-transparent',
+                        'space-y-4 rounded-md transition-all duration-200 border-2 border-transparent',
                         snapshot.isDraggingOver && 'bg-accent border-dashed border-primary',
                       )}
                     >
@@ -168,12 +168,12 @@ export default function CampaignEditor() {
                               <div
                                 {...provided.dragHandleProps}
                                 className={cn(
-                                  'flex flex-col items-center justify-center shrink-0 mr-[0.75rem]',
+                                  'flex flex-col items-center justify-center shrink-0 mr-[0.75rem] transition-colors duration-200',
                                   snapshot.isDragging ? 'cursor-grabbing' : 'cursor-grab',
                                   provided.dragHandleProps?.className,
                                 )}
                               >
-                                <GripHorizontal className="h-[1.25rem] w-[1.25rem] text-muted-foreground hover:text-primary transition-colors" />
+                                <GripHorizontal className="h-[1.25rem] w-[1.25rem] text-muted-foreground hover:text-primary" />
                               </div>
 
                               <div

@@ -81,10 +81,10 @@ export const saveCampaign = async (campaign: Partial<Campaign>): Promise<Campaig
   return mapToCampaign(data)
 }
 
-export const generateQRCodeForContact = (contact: any, eventId: string): string => {
+export const generateQRCodeDataForContact = (contact: any, eventId: string): string => {
   return JSON.stringify({
-    contactId: contact.id,
-    eventId: eventId,
+    contactId: contact.id || '00000000-0000-0000-0000-000000000000',
+    eventId: eventId || '00000000-0000-0000-0000-000000000000',
     firstName: contact.firstName || '',
     lastName: contact.lastName || '',
     company: contact.company || '',
@@ -105,7 +105,7 @@ export const sendCampaign = async (campaignId: string): Promise<boolean> => {
 
   if (contacts && contacts.length > 0) {
     const sends = contacts.map((contact: any) => {
-      const qrData = generateQRCodeForContact(contact, campaign.eventId)
+      const qrData = generateQRCodeDataForContact(contact, campaign.eventId)
       return {
         campaign_id: campaignId,
         contact_id: contact.id,
