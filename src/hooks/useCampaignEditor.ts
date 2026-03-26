@@ -69,6 +69,21 @@ export function useCampaignEditor(initialId?: string) {
     })
   }, [])
 
+  const reorderBlocks = useCallback((fromIndex: number, toIndex: number) => {
+    setCampaign((prev) => {
+      const blocks = [...(prev.content || [])]
+      if (fromIndex < 0 || fromIndex >= blocks.length || toIndex < 0 || toIndex >= blocks.length) {
+        return prev
+      }
+      if (fromIndex === toIndex) return prev
+
+      const [movedBlock] = blocks.splice(fromIndex, 1)
+      blocks.splice(toIndex, 0, movedBlock)
+
+      return { ...prev, content: blocks }
+    })
+  }, [])
+
   const handleSave = async (status: 'draft' | 'scheduled' = 'draft') => {
     if (!campaign.subject) {
       toast({ variant: 'destructive', title: 'Atenção', description: 'O assunto é obrigatório.' })
@@ -128,6 +143,7 @@ export function useCampaignEditor(initialId?: string) {
     updateBlock,
     removeBlock,
     moveBlock,
+    reorderBlocks,
     handleSave,
     handleSend,
     handleSendTest,
