@@ -18,6 +18,7 @@ const Contacts = lazy(() => import('@/pages/contacts/Contacts'))
 const Campaigns = lazy(() => import('@/pages/campaigns/Campaigns'))
 const CampaignEditor = lazy(() => import('@/pages/campaigns/CampaignEditor'))
 const Checkin = lazy(() => import('@/pages/checkin/Checkin'))
+const SuppliersLayout = lazy(() => import('@/pages/suppliers/SuppliersLayout'))
 const Suppliers = lazy(() => import('@/pages/suppliers/Suppliers'))
 const SupplierEdit = lazy(() => import('@/pages/suppliers/SupplierEdit'))
 const Settings = lazy(() => import('@/pages/settings/Settings'))
@@ -52,8 +53,10 @@ const App = () => (
                   <Route path="/campaigns/new" element={<CampaignEditor />} />
                   <Route path="/campaigns/:id" element={<CampaignEditor />} />
                   <Route path="/checkin" element={<Checkin />} />
-                  <Route path="/suppliers" element={<Suppliers />} />
-                  <Route path="/suppliers/:id" element={<SupplierEdit />} />
+                  <Route element={<SuppliersLayout />}>
+                    <Route path="/suppliers" element={<Suppliers />} />
+                    <Route path="/suppliers/:id" element={<SupplierEdit />} />
+                  </Route>
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/help" element={<Help />} />
                 </Route>
