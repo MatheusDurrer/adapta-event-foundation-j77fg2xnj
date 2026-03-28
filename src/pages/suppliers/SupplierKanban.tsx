@@ -3,14 +3,7 @@ import { useSuppliers } from './SuppliersContext'
 import { SupplierStatus } from './types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { User, GripVertical } from 'lucide-react'
+import { User, GripVertical, Mail, Phone, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const COLUMNS: { id: SupplierStatus; label: string; color: string }[] = [
@@ -111,30 +104,38 @@ export function SupplierKanban() {
                           {supplier.type}
                         </Badge>
                       </div>
-                      <div className="flex items-center text-xs text-muted-foreground gap-1.5 mt-2 pl-6">
-                        <User className="w-3.5 h-3.5" />
-                        <span className="truncate">{supplier.responsibleName}</span>
+                      <div className="flex flex-col gap-1.5 mt-3 pl-6">
+                        <div className="flex items-center text-xs text-muted-foreground gap-1.5">
+                          <User className="w-3.5 h-3.5 shrink-0" />
+                          <span className="truncate" title={supplier.responsibleName}>
+                            {supplier.responsibleName}
+                          </span>
+                        </div>
+                        {(supplier as any).cnpj && (
+                          <div className="flex items-center text-xs text-muted-foreground gap-1.5">
+                            <FileText className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate" title={(supplier as any).cnpj}>
+                              {(supplier as any).cnpj}
+                            </span>
+                          </div>
+                        )}
+                        {(supplier as any).email && (
+                          <div className="flex items-center text-xs text-muted-foreground gap-1.5">
+                            <Mail className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate" title={(supplier as any).email}>
+                              {(supplier as any).email}
+                            </span>
+                          </div>
+                        )}
+                        {(supplier as any).phone && (
+                          <div className="flex items-center text-xs text-muted-foreground gap-1.5">
+                            <Phone className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate" title={(supplier as any).phone}>
+                              {(supplier as any).phone}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    </div>
-
-                    <div className="pl-6">
-                      <Select
-                        value={supplier.status}
-                        onValueChange={(val) =>
-                          updateSupplierStatus(supplier.id, val as SupplierStatus)
-                        }
-                      >
-                        <SelectTrigger className="h-8 text-xs bg-background/50">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {COLUMNS.map((c) => (
-                            <SelectItem key={c.id} value={c.id} className="text-xs">
-                              Mover para {c.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
                     </div>
                   </CardContent>
                 </Card>
