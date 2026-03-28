@@ -6,6 +6,27 @@
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://mock.supabase.co'
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'mock-key'
 
+let globalMockUsers = [
+  {
+    id: 'user-mock-123',
+    email: 'admin@adapta.com',
+    user_metadata: { full_name: 'Admin Adapta' },
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 'user-mock-456',
+    email: 'user@adapta.com',
+    user_metadata: { full_name: 'Usuário Padrão' },
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 'user-mock-789',
+    email: 'guest@adapta.com',
+    user_metadata: { full_name: 'Convidado' },
+    created_at: new Date().toISOString(),
+  },
+]
+
 class MockSupabaseClient {
   public url: string
   public key: string
@@ -90,6 +111,27 @@ class MockSupabaseClient {
         }
         return queryBuilder
       },
+      delete: () => {
+        let fieldToDelete: string | null = null
+        let valToDelete: any = null
+
+        const chainable: any = {
+          eq: (field: string, val: any) => {
+            fieldToDelete = field
+            valToDelete = val
+            return chainable
+          },
+          then: (resolve: any) => {
+            setTimeout(() => {
+              if (table === 'users' && fieldToDelete === 'id') {
+                globalMockUsers = globalMockUsers.filter((u) => u.id !== valToDelete)
+              }
+              resolve({ data: null, error: null })
+            }, 600)
+          },
+        }
+        return chainable
+      },
       select: () => {
         const chainable: any = {
           eq: () => chainable,
@@ -147,6 +189,8 @@ class MockSupabaseClient {
                     created_at: `2023-10-10T${hour.toString().padStart(2, '0')}:30:00Z`,
                   }
                 })
+              } else if (table === 'users') {
+                mockData = [...globalMockUsers]
               } else {
                 mockData = [{ id: 'mock-1' }]
               }
@@ -161,6 +205,21 @@ class MockSupabaseClient {
   }
 
   public auth = {
+    signUp: async ({ email, password }: any) => {
+      await new Promise((r) => setTimeout(r, 1200))
+      if (!email || !password) {
+        return { error: { message: 'Dados inválidos' }, data: { user: null, session: null } }
+      }
+      const newUser = {
+        id: 'user-mock-' + Math.random().toString(36).slice(2, 9),
+        email,
+        user_metadata: { full_name: '' },
+        created_at: new Date().toISOString(),
+      }
+      globalMockUsers.push(newUser)
+      return { error: null, data: { user: newUser, session: null } }
+    },
+
     signInWithPassword: async ({ email, password }: any) => {
       await new Promise((r) => setTimeout(r, 1200))
       if (!email || !password) {
