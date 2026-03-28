@@ -1,4 +1,4 @@
-export type SupplierStatus = 'PROSPECTING' | 'CONTRACTED' | 'ACTIVE'
+export type SupplierStatus = 'PROSPECTING' | 'ACTIVE'
 export type SupplierType = 'INSUMOS' | 'ALIMENTOS' | 'LOGISTICA'
 
 export interface Supplier {

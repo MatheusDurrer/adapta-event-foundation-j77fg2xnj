@@ -29,7 +29,7 @@ export function SuppliersProvider({ children }: { children: ReactNode }) {
       phone: '(11) 91234-5678',
       email: 'contato@saborecia.com.br',
       type: 'ALIMENTOS',
-      status: 'CONTRACTED',
+      status: 'PROSPECTING',
     },
     {
       id: '3',
