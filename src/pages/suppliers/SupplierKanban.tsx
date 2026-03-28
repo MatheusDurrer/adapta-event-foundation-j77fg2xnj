@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useSuppliers } from './SuppliersContext'
 import { SupplierStatus } from './types'
 import { Card, CardContent } from '@/components/ui/card'
@@ -12,6 +13,7 @@ const COLUMNS: { id: SupplierStatus; label: string; color: string }[] = [
 ]
 
 export function SupplierKanban() {
+  const navigate = useNavigate()
   const { suppliers, updateSupplierStatus } = useSuppliers()
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dragOverColumn, setDragOverColumn] = useState<SupplierStatus | null>(null)
@@ -94,8 +96,9 @@ export function SupplierKanban() {
                         <div className="flex items-center gap-2 flex-1 mr-2">
                           <GripVertical className="w-4 h-4 text-muted-foreground/50 shrink-0" />
                           <h4
-                            className="font-semibold text-sm line-clamp-1"
+                            className="font-semibold text-sm line-clamp-1 text-purple-600 hover:text-purple-800 hover:underline cursor-pointer transition-colors"
                             title={supplier.companyName}
+                            onClick={() => navigate(`/suppliers/${supplier.id}`)}
                           >
                             {supplier.companyName}
                           </h4>
