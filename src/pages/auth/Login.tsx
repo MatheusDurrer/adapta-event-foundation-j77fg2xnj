@@ -6,14 +6,7 @@ import { Zap, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Form,
   FormControl,
@@ -141,14 +134,6 @@ export default function Login() {
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex justify-center border-t border-border/50 p-6 bg-muted/20">
-          <a
-            href="#"
-            className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
-          >
-            Ainda não tem conta? Criar nova conta
-          </a>
-        </CardFooter>
       </Card>
     </div>
   )
