@@ -11,7 +11,7 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Moon, Sun, Monitor, Loader2, Trash2 } from 'lucide-react'
+import { Moon, Sun, Loader2, Trash2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/contexts/ThemeContext'
@@ -72,8 +72,8 @@ export function PlatformSettings() {
         <CardContent>
           <RadioGroup
             value={theme}
-            onValueChange={(val) => setTheme(val as 'light' | 'dark' | 'system')}
-            className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+            onValueChange={(val) => setTheme(val as 'light' | 'dark')}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
           >
             <Label
               htmlFor="theme-light"
@@ -96,17 +96,6 @@ export function PlatformSettings() {
               <RadioGroupItem value="dark" id="theme-dark" className="sr-only" />
               <Moon className="h-6 w-6 mb-2" />
               <span>Escuro</span>
-            </Label>
-            <Label
-              htmlFor="theme-system"
-              className={cn(
-                'cursor-pointer flex flex-col items-center justify-center p-4 rounded-md border-2 border-muted hover:border-primary transition-colors',
-                theme === 'system' && 'border-primary bg-primary/5',
-              )}
-            >
-              <RadioGroupItem value="system" id="theme-system" className="sr-only" />
-              <Monitor className="h-6 w-6 mb-2" />
-              <span>Sistema</span>
             </Label>
           </RadioGroup>
         </CardContent>
