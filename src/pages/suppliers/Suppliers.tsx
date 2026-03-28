@@ -1,20 +1,47 @@
 import { PageHeader } from '@/components/shared/PageHeader'
-import { Card } from '@/components/ui/card'
-import { Truck } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { LayoutGrid, List } from 'lucide-react'
+import { SuppliersProvider } from './SuppliersContext'
+import { SupplierForm } from './SupplierForm'
+import { SupplierKanban } from './SupplierKanban'
+import { SupplierList } from './SupplierList'
 
 export default function Suppliers() {
   return (
-    <div className="animate-fade-in">
-      <PageHeader title="Fornecedores" />
-      <Card className="min-h-[60vh] flex flex-col items-center justify-center border-dashed">
-        <div className="h-20 w-20 bg-primary/5 rounded-full flex items-center justify-center mb-6">
-          <Truck className="h-10 w-10 text-primary/40" />
+    <SuppliersProvider>
+      <div className="animate-fade-in space-y-6 pb-8">
+        <div>
+          <PageHeader title="Fornecedores" />
+          <p className="text-muted-foreground mt-1">
+            Gestão do cadastro e status de parceiros e equipes de montagem.
+          </p>
         </div>
-        <h2 className="text-xl font-semibold mb-2">Gestão de Fornecedores</h2>
-        <p className="text-muted-foreground mb-6 max-w-sm text-center">
-          Mantenha o cadastro e as credenciais das equipes de montagem e parceiros.
-        </p>
-      </Card>
-    </div>
+
+        <Tabs defaultValue="kanban" className="flex flex-col gap-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:flex">
+              <TabsTrigger value="kanban" className="gap-2">
+                <LayoutGrid className="h-4 w-4" />
+                <span>Kanban</span>
+              </TabsTrigger>
+              <TabsTrigger value="list" className="gap-2">
+                <List className="h-4 w-4" />
+                <span>Lista</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <SupplierForm />
+          </div>
+
+          <TabsContent value="kanban" className="m-0 focus-visible:outline-none">
+            <SupplierKanban />
+          </TabsContent>
+
+          <TabsContent value="list" className="m-0 focus-visible:outline-none">
+            <SupplierList />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </SuppliersProvider>
   )
 }
