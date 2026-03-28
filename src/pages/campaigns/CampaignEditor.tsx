@@ -114,7 +114,7 @@ export default function CampaignEditor() {
           onClick={(e) => e.stopPropagation()}
         >
           <DragDropContext onDragEnd={onDragEnd}>
-            <StrictModeDroppable droppableId="email-blocks">
+            <StrictModeDroppable droppableId="email-blocks" isDropDisabled={false}>
               {(provided, snapshot) => (
                 <div
                   {...provided.droppableProps}
