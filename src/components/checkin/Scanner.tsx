@@ -24,9 +24,17 @@ export function Scanner({ onScan, disabled }: ScannerProps) {
   const startCamera = useCallback(async () => {
     stopCamera()
     setHasPermission(null)
+
+    if (!navigator?.mediaDevices?.getUserMedia) {
+      setHasPermission(false)
+      setErrorMsg('Erro ao acessar câmera. Verifique as permissões.')
+      return
+    }
+
     try {
+      // Use "ideal" to support devices (like desktops) that might not have a specific facingMode
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode },
+        video: { facingMode: { ideal: facingMode } },
       })
       streamRef.current = stream
       if (videoRef.current) {
