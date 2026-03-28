@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Camera, RefreshCcw, QrCode } from 'lucide-react'
 
@@ -9,39 +9,48 @@ interface ScannerProps {
 
 export function Scanner({ onScan, disabled }: ScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const streamRef = useRef<MediaStream | null>(null)
   const [hasPermission, setHasPermission] = useState<boolean | null>(null)
   const [errorMsg, setErrorMsg] = useState<string>('')
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment')
 
-  useEffect(() => {
-    let stream: MediaStream | null = null
-
-    async function startCamera() {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode },
-        })
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream
-        }
-        setHasPermission(true)
-        setErrorMsg('')
-      } catch (err) {
-        setHasPermission(false)
-        setErrorMsg('Erro ao acessar câmera. Verifique as permissões.')
-      }
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop())
+      streamRef.current = null
     }
+  }, [])
 
+  const startCamera = useCallback(async () => {
+    stopCamera()
+    setHasPermission(null)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode },
+      })
+      streamRef.current = stream
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+      }
+      setHasPermission(true)
+      setErrorMsg('')
+    } catch (err) {
+      setHasPermission(false)
+      setErrorMsg('Erro ao acessar câmera. Verifique as permissões.')
+    }
+  }, [facingMode, stopCamera])
+
+  useEffect(() => {
     if (!disabled) {
       startCamera()
+    } else {
+      stopCamera()
     }
 
     return () => {
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop())
-      }
+      stopCamera()
     }
-  }, [facingMode, disabled])
+  }, [disabled, startCamera, stopCamera])
 
   // Mock scan for testing purposes since external scanner libraries are disabled
   const simulateScan = () => {
@@ -64,9 +73,12 @@ export function Scanner({ onScan, disabled }: ScannerProps) {
             <Camera className="h-8 w-8 text-destructive" />
           </div>
           <p className="text-destructive font-medium">{errorMsg}</p>
-          <Button variant="outline" onClick={() => window.location.reload()}>
+          <button
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+            onClick={startCamera}
+          >
             Tentar Novamente
-          </Button>
+          </button>
         </div>
       )}
 
