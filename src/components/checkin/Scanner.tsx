@@ -37,9 +37,6 @@ export function Scanner({ onScan, disabled }: ScannerProps) {
         video: { facingMode: { ideal: facingMode } },
       })
       streamRef.current = stream
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-      }
       setHasPermission(true)
       setErrorMsg('')
     } catch (err) {
@@ -59,6 +56,12 @@ export function Scanner({ onScan, disabled }: ScannerProps) {
       stopCamera()
     }
   }, [disabled, startCamera, stopCamera])
+
+  useEffect(() => {
+    if (hasPermission === true && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current
+    }
+  }, [hasPermission])
 
   // Mock scan for testing purposes since external scanner libraries are disabled
   const simulateScan = () => {
