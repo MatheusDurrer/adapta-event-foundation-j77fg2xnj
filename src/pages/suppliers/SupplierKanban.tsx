@@ -12,7 +12,7 @@ import {
 import { User } from 'lucide-react'
 
 const COLUMNS: { id: SupplierStatus; label: string; color: string }[] = [
-  { id: 'PROSPECTING', label: 'Prospecção', color: 'bg-yellow-500' },
+  { id: 'PROSPECTING', label: 'Base de Fornecedores', color: 'bg-yellow-500' },
   { id: 'CONTRACTED', label: 'Contratado', color: 'bg-blue-500' },
   { id: 'ACTIVE', label: 'Ativo', color: 'bg-green-500' },
 ]
